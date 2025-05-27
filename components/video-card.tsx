@@ -12,7 +12,6 @@ const VideoCard = ({ video }: any) => {
                 <Link
                     href={`/v/${video.file_code}`}
                     title={`Watch ${video.title}`}
-                    target="blank"
                     >
                 <Thumbnail
                     thumbnail={video.thumbnail}
