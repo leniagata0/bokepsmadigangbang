@@ -4,9 +4,9 @@ import Image from "next/image";
 import { useState } from "react";
 
 const ImageLoader = ({ src, width, quality }: any) => {
-    return `${src}&w=320&q=${
+    return `https://wsrv.nl/?url=${src}&w=320&q=${
         quality || 80
-    }`;
+    }&output=webp`;
 };
 
 const Thumbnail = ({
@@ -28,6 +28,7 @@ const Thumbnail = ({
         <Image
             className="!w-full !h-[110px] md:!h-[150px] lg:!h-[180px] object-cover rounded-none md:rounded-t-md"
             alt={title}
+            title={title}
             src={image[imageIndex]}
             loader={ImageLoader}
             width={320}
