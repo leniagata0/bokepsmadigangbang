@@ -1,0 +1,172 @@
+---
+// src/pages/tags/index.astro
+import Layout from '../../layouts/BaseLayout.astro';
+import { getAllVideos, type VideoData } from '../../utils/data.ts';
+import { slugify } from '../../utils/slugify.ts';
+export const prerender = true;
+
+const allVideos: VideoData[] = await getAllVideos();
+const uniqueTags = new Set<string>();
+
+allVideos.forEach(video => {
+  if (typeof video.tags === 'string') {
+    video.tags.split(',').forEach(tag => {
+      const trimmedTag = tag.trim();
+      if (trimmedTag.length > 0) {
+        uniqueTags.add(trimmedTag);
+      }
+    });
+  }
+});
+
+const sortedTags = Array.from(uniqueTags).sort((a, b) => a.localeCompare(b));
+const url = import.meta.env.PUBLIC_SITE_URL;
+const nama = import.meta.env.PUBLIC_SITE_NAME;
+const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
+
+const breadcrumbs = [
+  { name: 'Home', url: `${url}` },
+  { name: 'Semua Tags', url: `${url}/tags` },
+];
+
+let preconnectDomains: string[] = [];
+
+const schemaBreadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": breadcrumbs.map((item, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "name": item.name,
+    ...(item.url && { "item": item.url })
+  }))
+};
+
+const schemaWebPage = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "url": `${url}/tags`,
+  "name": `Semua Tags - ${nama}`,
+  "description": `Jelajahi daftar lengkap tags dan kategori video yang tersedia di ${nama}. Temukan konten favorit Anda berdasarkan topik.`,
+  "publisher": {
+    "@type": "Organization",
+    "name": nama,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${url}/logo.png`
+    }
+  },
+  "inLanguage": "id-ID",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": `${url}/tags`
+  }
+};
+
+---
+
+<Layout
+  title={`Semua Tags Video - ${nama} | Jelajahi Kategori Lengkap`}
+  description={`Jelajahi daftar lengkap tags dan kategori video yang tersedia di ${nama}. Temukan konten favorit Anda berdasarkan topik dan genre. Navigasi cepat ke video yang Anda cari.`}
+  preconnectDomains={preconnectDomains}
+  siteName={nama}
+  siteUrl={url}
+>
+    <script type="application/ld+json" set:html={JSON.stringify(schemaBreadcrumb)} />
+  <script type="application/ld+json" set:html={JSON.stringify(schemaWebPage)} />
+
+  <main class="tags-index-page">
+    <nav class="breadcrumb" aria-label="breadcrumb">
+      <ol vocab="https://schema.org/" typeof="BreadcrumbList">
+        {breadcrumbs.map((item, index) => (
+          <li property="itemListElement" typeof="ListItem">
+            {index > 0 && <span class="separator" aria-hidden="true">/</span>}
+            {item.url ? (
+              <a property="item" typeof="WebPage" href={item.url}>
+                <span property="name">{item.name}</span>
+              </a>
+            ) : (
+              <span property="name">{item.name}</span>
+            )}
+            <meta property="position" content={(index + 1).toString()} />
+          </li>
+        ))}
+      </ol>
+    </nav>
+
+    <h1 class="page-title">Daftar Lengkap Tags Video di {nama}</h1>
+
+    {sortedTags.length === 0 ? (
+      <p class="no-tags-message">
+        Tidak ada tags yang ditemukan. Konten sedang ditambahkan, silakan kembali nanti!
+      </p>
+    ) : (
+      <div class="tags-grid">
+        {sortedTags.map(tag => (
+          <a href={`/video/${slugify(tag)}/1`} class="tag-card" rel="tag" title={`Lihat semua video dengan tag ${tag}`}>
+            {tag}
+          </a>
+        ))}
+      </div>
+    )}
+  </main>
+</Layout>
+
+<style>
+  .tags-index-page {
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding: var(--spacing-unit);
+  }
+
+  .page-title {
+    text-align: center;
+    margin-top: calc(var(--spacing-unit) * 2);
+    margin-bottom: calc(var(--spacing-unit) * 1.5);
+    color: var(--text-color);
+  }
+
+  .tags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--spacing-unit);
+    padding: var(--spacing-unit);
+    justify-content: center;
+  }
+
+  .tag-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: calc(var(--spacing-unit) * 1);
+    background-color: var(--background-color-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1.1em;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+    min-height: 80px;
+  }
+
+  .tag-card:hover {
+    background-color: var(--hover-color);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+  }
+
+  .no-tags-message {
+    text-align: center;
+    padding: var(--spacing-unit) calc(var(--spacing-unit) * 1.5);
+    background-color: var(--accent-color);
+    color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin: calc(var(--spacing-unit) * 2) auto;
+    max-width: 600px;
+    box-shadow: var(--shadow-light);
+  }
+</style>
