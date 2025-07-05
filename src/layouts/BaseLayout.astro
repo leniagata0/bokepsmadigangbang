@@ -4,8 +4,8 @@ export interface Props {
   description: string;
   preconnectDomains?: string[];
   siteName?: string;
-  siteUrl?: string;
-  keywords?: string;
+  siteUrl?: string; // Add siteUrl to props if it's not always 'url'
+  keywords?: string; // New: Add keywords prop for meta keywords
 }
 const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
@@ -18,18 +18,20 @@ const {
   description,
   preconnectDomains = [],
   siteName = nama,
-  siteUrl = url,
-  keywords,
+  siteUrl = url, // Ensure siteUrl is correctly set from props or default
+  keywords, // Destructure keywords
 } = Astro.props;
 
-const currentUrl = Astro.url.href;
+const currentUrl = Astro.url.href; // Use Astro.url.href for the current page's canonical URL
 const siteDescription = desk;
 
+// Ensure ogImageFullUrl is absolute and robust
 const ogImageFullUrl = new URL(`/logo.png`, siteUrl).href;
 
+// --- SEO: Schema.org JSON-LD ---
 
 const websiteSchema = {
-  "@context": "https://schema.org",
+  "@context": "https://schema.org", // Use HTTPS for schema.org
   "@type": "WebSite",
   "name": siteName,
   "url": siteUrl,
@@ -38,9 +40,9 @@ const websiteSchema = {
     "@type": "SearchAction",
     "target": {
       "@type": "EntryPoint",
-      "urlTemplate": `${siteUrl}/video/{query}/1`
+      "urlTemplate": `${siteUrl}/video/{search_term_string}/1` // Updated target for search action
     },
-    "query-input": "required name=query"
+    "query-input": "required name=search_term_string"
   }
 };
 
