@@ -95,9 +95,8 @@ const finalJsonLdSchemas = [
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageFullUrl} />
-
-        {google && <meta name="google-site-verification" content={google} />}
-    {yandex && <meta name="yandex-verification" content={yandex} />}
+    <meta name="google-site-verification" content={google} />
+    <meta name="yandex-verification" content={yandex} />
     
         {preconnectDomains.map(domain => (
       <link rel="preconnect" href={domain} crossorigin /> {/* Self-closing tag */}
