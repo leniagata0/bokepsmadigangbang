@@ -113,6 +113,43 @@ const currentUrl = url;
 const siteName = nama;
 const siteDescription = desk;
 
+const schemaWebSite = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": currentUrl,
+  "name": siteName,
+  "description": siteDescription,
+  "publisher": {
+    "@type": "Organization",
+    "name": siteName,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${currentUrl}/logo.png`
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": `${currentUrl}/video/{query}/1`
+    },
+    "query-input": "required name=query"
+  }
+};
+
+const schemaOrganization = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": siteName,
+  "url": currentUrl,
+  "logo": `${currentUrl}/logo.png`,
+  "description": siteDescription,
+  // Add more properties if applicable, e.g., contact info, social links
+  // "sameAs": [
+  //   "https://facebook.com/yourpage",
+  //   "https://twitter.com/youraccount"
+  // ]
+};
 
 ---
 
@@ -123,6 +160,8 @@ const siteDescription = desk;
   siteName={siteName}
   siteUrl={currentUrl}
 >
+  <script type="application/ld+json" set:html={JSON.stringify(schemaWebSite)} />
+  <script type="application/ld+json" set:html={JSON.stringify(schemaOrganization)} />
 
   <main class="home-page" itemscope itemtype="http://schema.org/WebPage">
     <meta itemprop="url" content={currentUrl} />
