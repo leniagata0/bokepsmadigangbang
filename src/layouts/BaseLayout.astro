@@ -1,32 +1,119 @@
 ---
-export interface Props {
-  title: string;
-  description: string;
-  preconnectDomains?: string[];
-  siteName?: string;
-  siteUrl?: string;
-  keywords?: string;
+// src/pages/index.astro
+import Layout from '../layouts/BaseLayout.astro';
+import VideoCard from '../components/VideoCard.astro';
+import { slugify } from '../utils/slugify';
+import { getAllVideos, type VideoData } from '../utils/data';
+import { nama, desk, url, terbit } from '../utils/site.ts';
+
+export const prerender = true;
+
+const allVideos: VideoData[] = await getAllVideos();
+
+const videosByCategory: { [key: string]: VideoData[] } = {};
+const numberOfVideosPerCategory = 16;
+
+const usedTitles = new Set<string>();
+
+allVideos.forEach(video => {
+  if (!videosByCategory[video.category]) {
+    videosByCategory[video.category] = [];
+  }
+  videosByCategory[video.category].push(video);
+});
+
+const finalVideosByCategory: { [key: string]: VideoData[] } = {};
+const allCategoryNames = Object.keys(videosByCategory);
+
+allCategoryNames.forEach(categoryName => {
+  const videosInThisCategory = videosByCategory[categoryName];
+  
+  const shuffledVideosInThisCategory = videosInThisCategory
+    .sort(() => 0.5 - Math.random());
+  
+  const selectedVideosForCategory: VideoData[] = [];
+  
+  for (const video of shuffledVideosInThisCategory) {
+    const normalizedTitle = video.title.toLowerCase().trim();
+    if (!usedTitles.has(normalizedTitle)) {
+      selectedVideosForCategory.push(video);
+      usedTitles.add(normalizedTitle);
+    }
+    if (selectedVideosForCategory.length >= numberOfVideosPerCategory) {
+      break;
+    }
+  }
+  
+  finalVideosByCategory[categoryName] = selectedVideosForCategory;
+});
+
+const sortedCategories = Object.keys(finalVideosByCategory).sort();
+
+const numberOfRandomVideos = 16;
+
+const randomVideos: VideoData[] = [];
+const videosForRandomSelection = allVideos.filter(video => {
+  const normalizedTitle = video.title.toLowerCase().trim();
+  return !usedTitles.has(normalizedTitle);
+});
+
+const shuffledRandomSelection = videosForRandomSelection
+  .sort(() => 0.5 - Math.random());
+
+for (const video of shuffledRandomSelection) {
+    const normalizedTitle = video.title.toLowerCase().trim();
+    if (!usedTitles.has(normalizedTitle)) {
+        randomVideos.push(video);
+        usedTitles.add(normalizedTitle);
+    }
+    if (randomVideos.length >= numberOfRandomVideos) {
+        break;
+    }
 }
+
+const allDomains = new Set<string>();
+
+Object.values(finalVideosByCategory).flat().forEach(video => {
+  try {
+    if (video.thumbnail) {
+      allDomains.add(new URL(video.thumbnail).origin);
+    }
+    if (video.embedUrl) {
+      allDomains.add(new URL(video.embedUrl).origin);
+    }
+  } catch (e) {
+    console.error(`[ERROR] URL thumbnail/video tidak valid untuk video ID ${video.id} (videosByRandomCategory):`, e);
+  }
+});
+
+randomVideos.forEach(video => {
+  try {
+    if (video.thumbnail) {
+      allDomains.add(new URL(video.thumbnail).origin);
+    }
+    if (video.embedUrl) {
+      allDomains.add(new URL(video.embedUrl).origin);
+    }
+  } catch (e) {
+    console.error(`[ERROR] URL thumbnail/video tidak valid untuk video ID ${video.id} (randomVideos):`, e);
+  }
+});
+
+const preconnectDomains = Array.from(allDomains);
 const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
 const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
-const google = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
-const yandex = import.meta.env.PUBLIC_YANDEX_SITE_VERIFICATION;
+const terbit = import.meta.env.PUBLIC_SITE_PUBLISHED_DATE;
 
-const {
-  title,
-  description,
-  preconnectDomains = [],
-  siteName = nama,
-  siteUrl = url,
-  keywords,
-} = Astro.props;
+const jsonLdSchemas: pageJsonLdSchemas;
 
-const currentUrl = Astro.url.href;
+const breadcrumbs = [
+  { name: 'Home', url: `${url}` },
+];
+
+const currentUrl = url;
+const siteName = nama;
 const siteDescription = desk;
-
-const ogImageFullUrl = new URL(`/logo.png`, siteUrl).href;
-
 
 const schemaWebSite = {
   "@context": "https://schema.org",
@@ -65,82 +152,78 @@ const schemaOrganization = {
   //   "https://twitter.com/youraccount"
   // ]
 };
-
-let pageJsonLdSchemas = [];
-if (Astro.props.jsonLdSchemas) {
-  pageJsonLdSchemas = Astro.props.jsonLdSchemas;
-}
-
 const finalJsonLdSchemas = [
-  ...jsonLdSchemas,
-  ...pageJsonLdSchemas
+  websiteSchema,
+  organizationSchema,
+  ...pageJsonLdSchemas,
 ];
-
 ---
 
-<!doctype html>
-<html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    {keywords && <meta name="keywords" content={keywords} />}
-    <meta name="robots" content="index, follow" />
-    
-        <link rel="canonical" href={currentUrl} />
+<Layout
+  title={`${nama} - Video Bokep Indo Terbaru - Nonton Gratis Online`}
+  description={`Nonton video streaming ${nama} terbaru secara gratis. Temukan koleksi video lengkap berdasarkan kategori seperti ${sortedCategories.slice(0, 3).join(', ')}${sortedCategories.length > 3 ? ', dan banyak lagi' : ''}.`}
+  preconnectDomains={preconnectDomains}
+  siteName={siteName}
+  siteUrl={currentUrl}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(schemaWebSite)} />
+  <script type="application/ld+json" set:html={JSON.stringify(schemaOrganization)} />
 
-        <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={currentUrl} />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content={ogImageFullUrl} />
-    <meta property="og:site_name" content={siteName} />
-    <meta property="og:locale" content="id_ID" />
+  <main class="home-page" itemscope itemtype="http://schema.org/WebPage">
+    <meta itemprop="url" content={currentUrl} />
+    <meta itemprop="name" content={`${nama} - Video Bokep Indo Terbaru`} />
+    <meta itemprop="description" content={siteDescription} />
+    <div itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content={siteName} />
+      <div itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+        <meta itemprop="url" content={`${currentUrl}/logo.png`} />
+      </div>
+    </div>
+    <meta itemprop="datePublished" content={terbit}/>
+    <meta itemprop="dateModified" content={new Date().toISOString()} />
 
-        <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@your_twitter_handle" />
-    <meta name="twitter:creator" content="@your_twitter_handle" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImageFullUrl} />
+    <section class="hero-section">
+      <h1 itemprop="headline">Nonton Video Streaming {nama} Terbaru dan Terlengkap</h1>
+      <p itemprop="description">{nama} menyediakan koleksi {siteDescription} secara gratis, dengan update rutin dan kualitas terbaik.</p>
+    </section>
 
-        {google && <meta name="google-site-verification" content={google} />}
-    {yandex && <meta name="yandex-verification" content={yandex} />}
-    
-        {preconnectDomains.map(domain => (
-      <link rel="preconnect" href={domain} crossorigin />
-    ))}
+    <section class="random-videos-section">
+    {randomVideos.length > 0 && (
+        <h2 class="section-title">Video Pilihan Kami</h2>
+        <div class="video-grid">
+          {randomVideos.map((video) => (
+            <VideoCard video={video} headingLevel="h3" />
+          ))}
+        </div>
+      </section>
+    )}
 
-        <script type="application/ld+json" set:html={JSON.stringify(finalJsonLdSchemas)} />
-
-        <link rel="stylesheet" href="/global.css" />
-  </head>
-  <body>
-    <header>
-      <nav class="main-nav">
-        <a href={siteUrl} class="logo" aria-label={`${siteName} - Beranda`}>{siteName}</a>
-        <form id="searchForm" action={`${siteUrl}/video/`} method="get" class="search-form" role="search">
-          <input type="search" name="query" placeholder="Cari video..." required aria-label="Cari video di situs ini" />
-          <button type="submit" aria-label="Mulai pencarian">Cari</button>
-        </form>
-        <ul class="nav-links">
-          <li><a href={siteUrl}>Beranda</a></li>
-          <li><a href={`${siteUrl}/category/`}>Kategori</a></li>
-          <li><a href={`${siteUrl}/tags/`}>Tags</a></li>
-          <li>
-            <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">☀️</button>
-          </li>
-        </ul>
-      </nav>
-    </header>
-
-    <slot />
-
-    <footer>
-      <p>&copy; {new Date().getFullYear()} {siteName}. All rights reserved.</p>
-    </footer>
-
-    <script is:inline>document.addEventListener('DOMContentLoaded',()=>{const searchForm=document.getElementById('searchForm');if(searchForm){searchForm.addEventListener('submit',function(event){event.preventDefault();const input=searchForm.querySelector('input[name="query"]');const query=input?input.value.trim():'';if(query){const slugifiedQuery=query.toLowerCase().replace(/\s+/g,'-');window.location.href=`/video/${ slugifiedQuery }/1`}else{window.location.href=`/video/`}})}const toggleButton=document.getElementById('darkModeToggle');const body=document.body;const LIGHT_ICON='☀️';const DARK_ICON='🌙';const STORAGE_KEY='darkModeEnabled';function applyTheme(isDarkMode){if(isDarkMode){body.classList.add('dark-mode');toggleButton.textContent=DARK_ICON}else{body.classList.remove('dark-mode');toggleButton.textContent=LIGHT_ICON}}const savedMode=localStorage.getItem(STORAGE_KEY);if(savedMode==='true'){applyTheme(true)}else if(savedMode===null&&window.matchMedia('(prefers-color-scheme: dark)').matches){applyTheme(true)}else{applyTheme(false)}if(toggleButton){toggleButton.addEventListener('click',()=>{const isCurrentlyDarkMode=body.classList.contains('dark-mode');const newMode=!isCurrentlyDarkMode;applyTheme(newMode);localStorage.setItem(STORAGE_KEY,newMode)})}});</script>
-  </body>
-</html>
+<section class="all-categories-section">
+      {sortedCategories.length === 0 ? (
+        <p class="no-videos-overall">Belum ada video yang tersedia di portal ini.</p>
+      ) : (
+        sortedCategories.map(categoryName => (
+          <div class="category-group">
+            <h2 class="category-title">
+              Video {categoryName} Terbaru
+            </h2>
+            <div class="video-grid">
+              {finalVideosByCategory[categoryName].length === 0 ? (
+                <p class="no-videos-in-category">Tidak ada video dalam kategori ini.</p>
+              ) : (
+                finalVideosByCategory[categoryName].map((video) => (
+                  <VideoCard video={video} headingLevel="h3" />
+                ))
+              )}
+            </div>
+            {videosByCategory[categoryName] && videosByCategory[categoryName].length > numberOfVideosPerCategory && (
+              <div class="view-all-button-container">
+                <a href={`${currentUrl}/category/${slugify(categoryName)}/1`} class="view-all-button">Lihat Semua Video {categoryName}</a>
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </section>
+  </main>
+</Layout>
