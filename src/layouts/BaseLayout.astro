@@ -58,8 +58,8 @@ if (Astro.props.jsonLdSchemas) { // Check if jsonLdSchemas is passed from a page
 }
 
 const finalJsonLdSchemas = [
-  ...jsonLdSchemas, // Existing global schemas (website, organization)
-  ...pageJsonLdSchemas // Schemas from the specific page
+  jsonLdSchemas,
+  pageJsonLdSchemas
 ];
 
 ---
