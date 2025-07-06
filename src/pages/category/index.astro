@@ -8,7 +8,7 @@ export const prerender = true;
 const allVideos: VideoData[] = await getAllVideos();
 
 const categoryData: { [key: string]: { count: number; thumbnails: string[]; } } = {};
-const allThumbnailDomains = new Set<string>(); // <-- Ini adalah Set yang sudah mengumpulkan domain
+const allThumbnailDomains = new Set<string>();
 allVideos.forEach(video => {
   if (!categoryData[video.category]) {
     categoryData[video.category] = {
@@ -28,7 +28,6 @@ allVideos.forEach(video => {
   }
 });
 
-// Konversi ke array objek untuk iterasi dan urutkan
 const categories = Object.keys(categoryData)
   .map(categoryName => {
     const categoryInfo = categoryData[categoryName];
@@ -130,7 +129,7 @@ const pageKeywords = `kategori video, daftar kategori, ${nama} kategori, nonton 
     ) : (
       <div class="category-list">
         {categories.map(category => (
-          <a href={`/category/${category.slug}/1`} class="category-item" title={`Lihat semua video di kategori ${category.name}`}>
+          <a href={`${url}/category/${category.slug}/1`} class="category-item" title={`Lihat semua video di kategori ${category.name}`}>
             {category.thumbnail && (
               <div class="category-thumbnail-wrapper">
                 <img
