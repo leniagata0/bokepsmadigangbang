@@ -80,35 +80,29 @@ for (const video of shuffledRandomSelection) {
     }
 }
 
-const allDomains = new Set<string>();
+const preconnectDomains = new Set<string>();
 
 Object.values(finalVideosByCategory).flat().forEach(video => {
   try {
     if (video.thumbnail) {
-      allDomains.add(new URL(video.thumbnail).origin);
-    }
-    if (video.embedUrl) {
-      allDomains.add(new URL(video.embedUrl).origin);
+      preconnectDomains.add(new URL(video.thumbnail).origin);
     }
   } catch (e) {
-    console.error(`[ERROR] URL thumbnail/video tidak valid untuk video ID ${video.id} (videosByRandomCategory):`, e);
+    console.error(`[ERROR] URL thumbnail tidak valid untuk video ID ${video.id} (videosByRandomCategory):`, e);
   }
 });
 
 randomVideos.forEach(video => {
   try {
     if (video.thumbnail) {
-      allDomains.add(new URL(video.thumbnail).origin);
-    }
-    if (video.embedUrl) {
-      allDomains.add(new URL(video.embedUrl).origin);
+      preconnectDomains.add(new URL(video.thumbnail).origin);
     }
   } catch (e) {
-    console.error(`[ERROR] URL thumbnail/video tidak valid untuk video ID ${video.id} (randomVideos):`, e);
+    console.error(`[ERROR] URL thumbnail tidak valid untuk video ID ${video.id} (randomVideos):`, e);
   }
 });
 
-const preconnectDomains = Array.from(allDomains);
+const finalPreconnectDomains = Array.from(preconnectDomains);
 
 const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
@@ -159,10 +153,10 @@ const schemaBreadcrumb = {
 ---
 
 <Layout
-  title={`${nama} - Video Bokep Indo Terbaru - Nonton Gratis Online`}
-  description={`Nonton video streaming ${nama} terbaru secara gratis. Temukan koleksi video lengkap berdasarkan kategori seperti ${sortedCategories.slice(0, 3).join(', ')}${sortedCategories.length > 3 ? ', dan banyak lagi' : ''}.`}
+  title={`${nama} - Video Bokep Indo Terbaru`}
+  description={`Nonton video streaming ${nama} terbaru secara gratis. Temukan Video bokep lengkap seperti ${sortedCategories.slice(0, 3).join(', ')}${sortedCategories.length > 3 ? ', dan banyak lagi' : ''}.`}
   siteName={siteName}
-  preconnectDomains={preconnectDomains}
+  preconnectDomains={finalPreconnectDomains}
   siteUrl={currentUrl}
   keywords={homeKeywords}
 >
@@ -192,7 +186,8 @@ const schemaBreadcrumb = {
 
     <section class="random-videos-section">
     {randomVideos.length > 0 && (
-        <h2 class="section-title">Video Pilihan Kami</h2><div class="video-grid">
+        <h2 class="section-title">Video Pilihan Kami</h2>
+        <div class="video-grid">
           {randomVideos.map((video) => (
             <VideoCard video={video} headingLevel="h3" />
           ))}
@@ -205,14 +200,17 @@ const schemaBreadcrumb = {
         <p class="no-videos-overall">Belum ada video yang tersedia di portal ini.</p>
       ) : (
         sortedCategories.map(categoryName => (
-          <div class="category-group"><h2 class="category-title">Video {categoryName} Terbaru</h2><div class="video-grid">
+          <div class="category-group">
+            <h2 class="category-title">Video {categoryName} Terbaru</h2>
+            <div class="video-grid">
               {finalVideosByCategory[categoryName].length === 0 ? (
                 <p class="no-videos-in-category">Tidak ada video dalam kategori ini.</p>
               ) : (
                 finalVideosByCategory[categoryName].map((video) => (
                   <VideoCard video={video} headingLevel="h3" />
                 ))
-              )}</div>
+              )}
+            </div>
             {videosByCategory[categoryName] && videosByCategory[categoryName].length > numberOfVideosPerCategory && (
               <div class="view-all-button-container">
                 <a href={`${currentUrl}/category/${slugify(categoryName)}/1`} class="view-all-button">Lihat Semua Video {categoryName}</a>
