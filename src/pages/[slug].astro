@@ -20,7 +20,6 @@ const { video, allVideos } = Astro.props;
 const numberOfRelatedVideos = 16;
 let relatedVideos: VideoData[] = [];
 
-// 1. Persiapan kata kunci dari judul video saat ini
 const currentVideoTitleKeywords = video.title
   .toLowerCase()
   .split(/\s+/)
@@ -33,7 +32,7 @@ const currentVideoTitleKeywords = video.title
   'begitu', 'begini', 'sini', 'situ', 'mana', 'siapa', 'apa', 'mengapa',
   'bagaimana', 'dimana', 'kapan', 'kalau', 'walaupun', 'meskipun', 'bahkan', 'hingga',
   'sampai', 'baik', 'buruk',
-].includes(word)); // Kata kunci "buruk" tidak lagi dikecualikan
+].includes(word));
 
 const candidateVideos = allVideos.filter(v => 
     v.id !== video.id && 
@@ -57,7 +56,6 @@ const scoredCandidates = candidateVideos.map(v => {
   return { video: v, score };
 });
 
-// Implementasi Fisher-Yates shuffle untuk pengocokan yang lebih baik
 function shuffleArray<T>(array: T[]): T[] {
   let currentIndex = array.length, randomIndex;
   while (currentIndex !== 0) {
@@ -112,7 +110,7 @@ if (relatedVideos.length < numberOfRelatedVideos) {
 
 const numberOfRandomVideos = 16; 
 const currentAndRelatedVideoIds = new Set([video.id, ...relatedVideos.map(v => v.id)]);
-const currentAndRelatedVideoTitles = new Set([video.title.toLowerCase(), ...relatedVideos.map(v => v.title.toLowerCase())]); // Ambil judul dari related juga
+const currentAndRelatedVideoTitles = new Set([video.title.toLowerCase(), ...relatedVideos.map(v => v.title.toLowerCase())]);
 
 const videosForRandomSelection = allVideos.filter(v => 
     !currentAndRelatedVideoIds.has(v.id) &&
@@ -164,13 +162,11 @@ const breadcrumbs = [
 const datePublished = video.datePublished || terbit;
 const dateModified = video.dateModified || new Date().toISOString();
 
-// --- Helper function to convert seconds to ISO 8601 duration format ---
 function toISO8601Duration(seconds: number | string): string {
   if (typeof seconds === 'string') {
     seconds = parseInt(seconds, 10);
   }
   if (isNaN(seconds) || seconds < 0) {
-    // Default to 26 seconds if invalid or not provided, matching your current fallback
     return 'PT26S'; 
   }
 
@@ -184,7 +180,6 @@ function toISO8601Duration(seconds: number | string): string {
   if (minutes > 0) durationString += `${minutes}M`;
   if (remainingSeconds > 0) durationString += `${remainingSeconds}S`;
 
-  // Handle case where duration is 0, or if it was less than a second (e.g., 'PT0S' or 'PT1S' as minimal)
   if (durationString === 'PT') {
     return 'PT26S'; // Fallback to a default if 0 or unmeasurable
   }
@@ -198,7 +193,7 @@ const schemaWebPage = {
   "@type": "WebPage",
   "url": `${url}/${slugify(video.title)}-${video.id}/`,
   "name": `${video.title}`,
-  "description": `${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`,
+  "description": `${video.description} | Tonton video ${video.title} terbaru di ${nama} kategori ${video.category}.`,
   "publisher": {
     "@type": "Organization",
     "name": nama,
@@ -216,12 +211,11 @@ const schemaVideoObject = {
   "@context": "https://schema.org",
   "@type": "VideoObject",
   "name": video.title,
-  "description": `${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`, // Enhanced
+  "description": `${video.description} | Tonton video ${video.title} terbaru di ${nama} kategori ${video.category}.`,
   "uploadDate": datePublished,
   "embedUrl": video.embedUrl,
   "thumbnailUrl": video.thumbnail,
   "duration": formattedDuration,
-  // "contentUrl": video.contentUrl || video.embedUrl, // Dihapus karena biasanya untuk direct file video
   "interactionCount": video.views || "1496",
   "keywords": video.tags ? video.tags.split(',').map(tag => tag.trim()).join(', ') : video.title,
   "publisher": {
@@ -251,7 +245,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
 
 <Layout
   title={`${video.title} - ${nama}`}
-  description={`${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`}
+  description={`${video.description} | Tonton video ${video.title} terbaru di ${nama} kategori ${video.category}`}
   siteName={nama}
   preconnectDomains={preconnectDomains}
   siteUrl={url}
@@ -279,8 +273,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
       </ol>
     </nav>
 
-    <article itemscope itemtype="https://schema.org/VideoObject">
-      {/* Menghapus meta itemprop yang duplikat karena sudah ada di schemaVideoObject */}
+    <article>
       <div class="video-player-container">
         <iframe
           src={video.embedUrl}
@@ -311,7 +304,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
 
 {videoTags.length > 0 && (
       <section class="video-tags-section">
-        <h2 class="section-title">Tags:</h2> {/* Menggunakan h2 untuk section title */}
+        <h2 class="section-title">Tags:</h2>
         <div class="tags-list">
           {videoTags.map(tag => (
             <a href={`${url}/video/${slugify(tag)}/1`} class="tag-chip" rel="tag">
@@ -324,7 +317,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
 
     {relatedVideos.length > 0 && (
       <section class="related-videos-section">
-        <h2 class="section-title">Video Terkait {video.title}</h2> {/* Menggunakan h2 untuk section title */}
+        <h2 class="section-title">Video Terkait {video.title}</h2>
         <div class="video-grid">
           {relatedVideos.map((relatedVideo) => (
             <VideoCard video={relatedVideo} videoDetailPath={`/${slugify(relatedVideo.title)}-${relatedVideo.id}/`} headingLevel="h3" />
@@ -343,7 +336,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
           <ins id="1058210" data-width="300" data-height="262"></ins>
           <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1058210});</script>
         </div>
-        <h2 class="section-title">Video Lainnya</h2> {/* Menggunakan h2 untuk section title */}
+        <h2 class="section-title">Video Lainnya</h2>
         <div class="video-grid">
           {randomVideos.map((randomVideo) => (
             <VideoCard video={randomVideo} videoDetailPath={`/${slugify(randomVideo.title)}-${randomVideo.id}/`} headingLevel="h3" />
