@@ -201,8 +201,7 @@ const schemaBreadcrumb = {
       ) : (
         sortedCategories.map(categoryName => (
           <div class="category-group">
-            <h2 class="category-title">Video {categoryName} Terbaru</h2>
-            <div class="video-grid">
+            <h2 class="category-title">Video {categoryName} Terbaru</h2><div class="video-grid">
               {finalVideosByCategory[categoryName].length === 0 ? (
                 <p class="no-videos-in-category">Tidak ada video dalam kategori ini.</p>
               ) : (
