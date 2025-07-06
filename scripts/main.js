@@ -1,4 +1,4 @@
-// /scripts/main.js
+// src/scripts/main.js
 
 document.addEventListener('DOMContentLoaded', () => {
   // Search Form Logic
@@ -6,11 +6,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (searchForm) {
     searchForm.addEventListener('submit', function(event) {
       event.preventDefault();
+      
       const input = searchForm.querySelector('input[name="query"]');
       const query = input ? input.value.trim() : '';
+
       if (query) {
         const slugifiedQuery = query.toLowerCase().replace(/\s+/g, '-');
-        window.location.href = `/video/${slugifiedQuery}/1`; // Include /1 as discussed
+        window.location.href = `/video/${slugifiedQuery}/1`; 
       } else {
         window.location.href = `/video/`;
       }
