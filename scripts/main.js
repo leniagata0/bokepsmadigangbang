@@ -1,4 +1,4 @@
-// src/scripts/main.js
+// /scripts/main.js
 
 document.addEventListener('DOMContentLoaded', () => {
   // Search Form Logic
