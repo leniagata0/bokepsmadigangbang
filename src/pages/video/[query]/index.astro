@@ -3,7 +3,7 @@
 // Fungsi ini akan mengalihkan /video/?query=keyword ke /video/keyword/1
 
 import { Astro } from 'astro';
-import { slugify } from '../../utils/slugify.ts'; // Pastikan path ini benar
+import { slugify } from '../utils/slugify.ts'; // Pastikan path ini benar
 
 const rawQueryFromSearch = Astro.url.searchParams.get('query');
 
