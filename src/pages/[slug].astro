@@ -17,7 +17,6 @@ export async function getStaticPaths() {
 }
 
 const { video, allVideos } = Astro.props;
-const preconnectDomains = Array.from(allDomains);
 const numberOfRelatedVideos = 16;
 let relatedVideos: VideoData[] = [];
 
@@ -33,8 +32,8 @@ const currentVideoTitleKeywords = video.title
   'oleh', 'sejak', 'tanpa', 'melalui', 'tentang', 'terhadap',
   'begitu', 'begini', 'sini', 'situ', 'mana', 'siapa', 'apa', 'mengapa',
   'bagaimana', 'dimana', 'kapan', 'kalau', 'walaupun', 'meskipun', 'bahkan', 'hingga',
-  'sampai', 'baik', 'buruk'
-].includes(word) && !['bokep', 'video', 'jepang', 'indo'].includes(word));
+  'sampai', 'baik', 'buruk',
+].includes(word)); // Kata kunci "buruk" tidak lagi dikecualikan
 
 const candidateVideos = allVideos.filter(v => 
     v.id !== video.id && 
@@ -58,17 +57,36 @@ const scoredCandidates = candidateVideos.map(v => {
   return { video: v, score };
 });
 
-scoredCandidates.sort((a, b) => {
-  if (b.score === a.score) {
-    return 0.5 - Math.random(); 
-  }
-  return b.score - a.score;
+// Implementasi Fisher-Yates shuffle untuk pengocokan yang lebih baik
+function shuffleArray<T>(array: T[]): T[] {
+  let currentIndex = array.length, randomIndex;
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+  return array;
+}
+
+// Urutkan berdasarkan skor, lalu kocok jika skornya sama
+scoredCandidates.sort((a, b) => b.score - a.score);
+// Kelompokkan berdasarkan skor yang sama dan kocok setiap kelompok
+const groupedByScore = scoredCandidates.reduce((acc, curr) => {
+  (acc[curr.score] = acc[curr.score] || []).push(curr);
+  return acc;
+}, {} as Record<number, typeof scoredCandidates>);
+
+let shuffledScoredCandidates: typeof scoredCandidates = [];
+Object.keys(groupedByScore).sort((a,b) => parseInt(b) - parseInt(a)).forEach(score => {
+  shuffledScoredCandidates.push(...shuffleArray(groupedByScore[parseInt(score)]));
 });
+
 
 const addedVideoIds = new Set<string>();
 const addedVideoTitles = new Set<string>();
 
-for (const scoredV of scoredCandidates) {
+for (const scoredV of shuffledScoredCandidates) { // Gunakan shuffledScoredCandidates
   if (relatedVideos.length >= numberOfRelatedVideos) {
     break;
   }
@@ -88,7 +106,7 @@ if (relatedVideos.length < numberOfRelatedVideos) {
     !addedVideoIds.has(v.id) &&
     !addedVideoTitles.has(v.title.toLowerCase())
   );
-  const shuffledOthersForRandom = otherVideosForRandom.sort(() => 0.5 - Math.random());
+  const shuffledOthersForRandom = shuffleArray(otherVideosForRandom); // Gunakan shuffleArray
   relatedVideos.push(...shuffledOthersForRandom.slice(0, remainingSlots));
 }
 
@@ -101,8 +119,7 @@ const videosForRandomSelection = allVideos.filter(v => 
     !currentAndRelatedVideoTitles.has(v.title.toLowerCase())
 );
 
-const randomVideos = videosForRandomSelection
-  .sort(() => 0.5 - Math.random())
+const randomVideos = shuffleArray(videosForRandomSelection) // Gunakan shuffleArray
   .slice(0, numberOfRandomVideos);
 
 const allDomains = new Set<string>();
@@ -131,6 +148,8 @@ randomVideos.forEach(v => {
   }
 });
 
+const preconnectDomains = Array.from(allDomains); // Mendefinisikan preconnectDomains
+
 const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
 const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
@@ -147,29 +166,29 @@ const dateModified = video.dateModified || new Date().toISOString();
 
 // --- Helper function to convert seconds to ISO 8601 duration format ---
 function toISO8601Duration(seconds: number | string): string {
-  if (typeof seconds === 'string') {
-    seconds = parseInt(seconds, 10);
-  }
-  if (isNaN(seconds) || seconds < 0) {
-    // Default to 26 seconds if invalid or not provided, matching your current fallback
-    return 'PT26S'; 
-  }
+  if (typeof seconds === 'string') {
+    seconds = parseInt(seconds, 10);
+  }
+  if (isNaN(seconds) || seconds < 0) {
+    // Default to 26 seconds if invalid or not provided, matching your current fallback
+    return 'PT26S'; 
+  }
 
-  const hours = Math.floor(seconds / 3600);
-  seconds %= 3600;
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
+  const hours = Math.floor(seconds / 3600);
+  seconds %= 3600;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
 
-  let durationString = 'PT';
-  if (hours > 0) durationString += `${hours}H`;
-  if (minutes > 0) durationString += `${minutes}M`;
-  if (remainingSeconds > 0) durationString += `${remainingSeconds}S`;
+  let durationString = 'PT';
+  if (hours > 0) durationString += `${hours}H`;
+  if (minutes > 0) durationString += `${minutes}M`;
+  if (remainingSeconds > 0) durationString += `${remainingSeconds}S`;
 
-  // Handle case where duration is 0, or if it was less than a second (e.g., 'PT0S' or 'PT1S' as minimal)
-  if (durationString === 'PT') {
-    return 'PT26S'; // Fallback to a default if 0 or unmeasurable
-  }
-  return durationString;
+  // Handle case where duration is 0, or if it was less than a second (e.g., 'PT0S' or 'PT1S' as minimal)
+  if (durationString === 'PT') {
+    return 'PT26S'; // Fallback to a default if 0 or unmeasurable
+  }
+  return durationString;
 }
 
 const formattedDuration = toISO8601Duration(video.duration || 26);
@@ -202,7 +221,7 @@ const schemaVideoObject = {
   "embedUrl": video.embedUrl,
   "thumbnailUrl": video.thumbnail,
   "duration": formattedDuration,
-  "contentUrl": video.contentUrl || video.embedUrl,
+  // "contentUrl": video.contentUrl || video.embedUrl, // Dihapus karena biasanya untuk direct file video
   "interactionCount": video.views || "1496",
   "keywords": video.tags ? video.tags.split(',').map(tag => tag.trim()).join(', ') : video.title,
   "publisher": {
@@ -234,7 +253,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
   title={`${video.title} - ${nama}`}
   description={`${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`}
   siteName={nama}
-  preconnectDomains={preconnectDomains}
+  preconnectDomains={preconnectDomains}
   siteUrl={url}
 >
   <script type="application/ld+json" set:html={JSON.stringify(schemaWebPage)} />
@@ -261,29 +280,14 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
     </nav>
 
     <article itemscope itemtype="https://schema.org/VideoObject">
-      <meta itemprop="name" content={video.title} />
-      <meta itemprop="description" content={`${video.description} di ${nama} ${desk}`} />
-      <meta itemprop="uploadDate" content={datePublished} />
-      <meta itemprop="embedUrl" content={video.embedUrl} />
-      <meta itemprop="thumbnailUrl" content={video.thumbnail} />
-      {video.duration && <meta itemprop="duration" content={formattedDuration} />}
-      {video.contentUrl && <meta itemprop="contentUrl" content={video.contentUrl} />}
-      {video.views && <meta itemprop="interactionCount" content={video.views} />}
-      {video.tags && <meta itemprop="keywords" content={videoTags.join(', ')} />}
-      <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
-        <meta itemprop="name" content={nama} />
-        <div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
-          <meta itemprop="url" content={`${url}/logo.png`} />
-        </div>
-      </div>
-
+      {/* Menghapus meta itemprop yang duplikat karena sudah ada di schemaVideoObject */}
       <div class="video-player-container">
         <iframe
           src={video.embedUrl}
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen
-          loading="eager"
+          loading="eager" {/* Tetap "eager" sesuai permintaan */}
           width="100%"
           height="300"
           title={video.title}
@@ -307,7 +311,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
 
 {videoTags.length > 0 && (
       <section class="video-tags-section">
-        <h2 class="section-title">Tags:</h2>
+        <h2 class="section-title">Tags:</h2> {/* Menggunakan h2 untuk section title */}
         <div class="tags-list">
           {videoTags.map(tag => (
             <a href={`${url}/video/${slugify(tag)}/1`} class="tag-chip" rel="tag">
@@ -320,7 +324,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
 
     {relatedVideos.length > 0 && (
       <section class="related-videos-section">
-        <h2 class="section-title">Video Terkait {video.title}</h2>
+        <h2 class="section-title">Video Terkait {video.title}</h2> {/* Menggunakan h2 untuk section title */}
         <div class="video-grid">
           {relatedVideos.map((relatedVideo) => (
             <VideoCard video={relatedVideo} videoDetailPath={`/${slugify(relatedVideo.title)}-${relatedVideo.id}/`} headingLevel="h3" />
@@ -328,7 +332,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
         </div>
       </section>
     )}
-    
+    
     {randomVideos.length > 0 && (
       <section class="random-videos-section">
         <div class="juicyads-ad-container" style="min-height: 262px; width: 100%; display: flex; justify-content: center; align-items: center; background-color: var(--card-bg); border-radius: var(--border-radius-medium); margin-bottom: var(--spacing-unit);">
@@ -339,7 +343,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
           <ins id="1058210" data-width="300" data-height="262"></ins>
           <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1058210});</script>
         </div>
-        <h2 class="section-title">Video Lainnya</h2>
+        <h2 class="section-title">Video Lainnya</h2> {/* Menggunakan h2 untuk section title */}
         <div class="video-grid">
           {randomVideos.map((randomVideo) => (
             <VideoCard video={randomVideo} videoDetailPath={`/${slugify(randomVideo.title)}-${randomVideo.id}/`} headingLevel="h3" />
