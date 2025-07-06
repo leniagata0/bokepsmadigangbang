@@ -18,12 +18,17 @@ const { query, page } = Astro.params;
 const currentPage = page ? parseInt(page) : 1;
 const videosPerPage = 40;
 
+// --- PERBAIKAN KRITIS: Fleksibilitas originalQuery untuk mendukung URL bersih & fallback SEO ---
 const rawQueryFromParams = query ? decodeURIComponent(query) : '';
 const rawQueryFromSearch = Astro.url.searchParams.get('query') ? decodeURIComponent(Astro.url.searchParams.get('query')!) : '';
+
+// originalQuery akan mengambil dari params (URL bersih) atau dari search params (fallback)
 const originalQuery = rawQueryFromParams || rawQueryFromSearch;
+// -----------------------------------------------------------------------------------------
 
 const searchInput = originalQuery.toLowerCase().trim();
 
+// --- PERBAIKAN: Tambahkan kembali Stop Words yang relevan ---
 const stopWords = new Set([
   'yang', 'dan', 'atau', 'di', 'ke', 'dari', 'untuk', 'dengan', 'pada', 'adalah',
   'itu', 'ini', 'mereka', 'dia', 'saya', 'kami', 'kita', 'kamu', 'anda', 'mereka',
@@ -33,13 +38,16 @@ const stopWords = new Set([
   'oleh', 'sejak', 'tanpa', 'melalui', 'tentang', 'terhadap',
   'begitu', 'begini', 'sini', 'situ', 'mana', 'siapa', 'apa', 'mengapa',
   'bagaimana', 'dimana', 'kapan', 'kalau', 'walaupun', 'meskipun', 'bahkan', 'hingga',
-  'sampai', 'baik', 'buruk', 'bokep', 'indo', 'video', 'vidio',
+  'sampai', 'baik', 'buruk',
+  'bokep', 'indo', 'video', 'vidio', // Ditambahkan kembali untuk filtering yang lebih baik
 ]);
+// --------------------------------------------------------------------
 
+// Proses searchInput untuk mendapatkan kata kunci yang bersih
 const searchWords = searchInput
-    .replace(/-/g, ' ')
-    .split(/\s+/)
-    .filter(word => word.length > 0 && !stopWords.has(word));
+    .replace(/-/g, ' ') // Ganti dash dengan spasi
+    .split(/\s+/)      // Pisahkan berdasarkan spasi atau lebih
+    .filter(word => word.length > 0 && !stopWords.has(word)); // Filter out stop words
 
 
 let searchResults: VideoData[] = [];
@@ -50,6 +58,7 @@ let randomPostsBelowSearch: VideoData[] = [];
 
 const allVideos: VideoData[] = await getAllVideos();
 
+// Logika pencarian hanya berjalan jika ada kata kunci yang valid setelah filter stop words
 if (searchWords.length > 0) {
   try {
     const scoredResults: { video: VideoData; score: number }[] = [];
@@ -82,7 +91,7 @@ if (searchWords.length > 0) {
           }
         });
 
-        if (videoTitle.includes(searchInput)) {
+        if (videoTitle.includes(searchInput)) { // Kecocokan frasa lengkap dari input asli
           score += 200;
         }
 
@@ -156,6 +165,7 @@ if (searchWords.length > 0) {
     randomPostsBelowSearch = [];
   }
 } else {
+    // Jika tidak ada query atau semua query adalah stop words, tampilkan video acak
     const numberOfRandomPosts = 12;
     randomPostsBelowSearch = allVideos
         .sort(() => 0.5 - Math.random())
@@ -172,6 +182,7 @@ if (searchWords.length > 0) {
     });
     preconnectDomains = Array.from(domainsSet);
 }
+
 
 const baseSearchUrl = `${url}/video/${originalQuery}`;
 
@@ -231,6 +242,7 @@ const breadcrumbs = [
       </p>
     ) : (
       <div class="video-grid" itemprop="mainContentOfPage">
+        {/* PERBAIKAN: Pastikan konsistensi trailing slash */}
         {paginatedResults.map((video) => (
           <VideoCard video={video} videoDetailPath={`/${slugify(video.title)}-${video.id}/`} />
         ))}
@@ -241,6 +253,7 @@ const breadcrumbs = [
       <section class="random-videos-section">
         <h2 class="section-title">Video Mungkin Anda Suka</h2>
         <div class="video-grid">
+          {/* PERBAIKAN: Pastikan konsistensi trailing slash */}
           {randomPostsBelowSearch.map((video) => (
             <VideoCard video={video} videoDetailPath={`/${slugify(video.title)}-${video.id}/`} />
           ))}
