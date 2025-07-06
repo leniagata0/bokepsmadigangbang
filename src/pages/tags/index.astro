@@ -21,9 +21,20 @@ allVideos.forEach(video => {
 const filteredTags = Array.from(uniqueTags).filter(tag => {
   const lowerCaseTag = tag.toLowerCase();
 
-  // Aturan 1: Filter tag seperti "bokep xx" atau "bokep 123"
-  const isBokepTwoAlphanum = /^bokep\s+[a-z0-9]{2}$/i.test(lowerCaseTag);
-  const isBokepNumbers = /^bokep\s+\d+$/i.test(lowerCaseTag);
+  // --- REVISI DI SINI ---
+  // Aturan 1: Filter tag yang mengandung "bokep" diikuti dengan:
+  // - Spasi dan satu karakter alfanumerik/simbol (misal: "bokep x", "bokep 1", "bokep -")
+  // - Spasi dan dua karakter alfanumerik (misal: "bokep xx")
+  // - Hanya "bokep" (tanpa karakter tambahan)
+  // - Spasi dan angka (misal: "bokep 123")
+  const isBokepAndSpecificRandom = /^bokep\s+[\w\d\-]{1,2}$/i.test(lowerCaseTag); // 'bokep' diikuti 1 atau 2 karakter alfanumerik/strip
+  const isJustBokep = /^bokep$/i.test(lowerCaseTag); // Hanya 'bokep'
+  const isBokepFollowedByNumbers = /^bokep\s+\d+$/i.test(lowerCaseTag); // 'bokep' diikuti angka berapapun
+  
+  // Gabungkan semua kondisi "bokep"
+  const isBokepIrrelevant = isBokepAndSpecificRandom || isJustBokep || isBokepFollowedByNumbers;
+  // --- AKHIR REVISI ---
+
 
   // Aturan 2: Filter tag yang hanya satu kata dan sangat panjang (misal: randomstringpanjangsekali)
   // Ini membantu membersihkan typo atau data yang korup yang tidak sengaja menjadi tag
@@ -44,8 +55,7 @@ const filteredTags = Array.from(uniqueTags).filter(tag => {
 
   // Menggabungkan semua kondisi pengecualian
   return !(
-    isBokepTwoAlphanum ||
-    isBokepNumbers ||
+    isBokepIrrelevant || // Menggunakan variabel gabungan yang baru
     isSingleLongRandomWord ||
     isOnlyNumbers ||
     isSingleWordAndInShortStopList
