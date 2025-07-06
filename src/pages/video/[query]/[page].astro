@@ -139,8 +139,6 @@ if (searchWords.length > 0) {
         console.error(`URL tidak valid di JSON untuk video ID ${video.id} (random posts):`, e);
       }
     });
-    preconnectDomains = Array.from(domainsSet);
-
 
   } catch (error) {
     console.error('Gagal melakukan pencarian atau mengambil video acak:', error);
@@ -167,7 +165,7 @@ if (searchWords.length > 0) {
 }
 
 
-const baseSearchUrl = `/video/${originalQuery}`;
+const baseSearchUrl = `${url}/video/${originalQuery}`;
 
 function capitalizeWords(str: string): string {
   const words = str
