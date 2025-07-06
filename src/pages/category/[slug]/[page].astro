@@ -87,7 +87,7 @@ export async function getStaticPaths() {
 const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
 
-const { categoryName, currentPage, totalPages, videos: paginatedVideos, preconnectDomains } = Astro.props;
+const { categoryName, currentPage, totalPages, videos: paginatedVideos } = Astro.props;
 
 const currentUrl = new URL(Astro.url.pathname, url).href; // Get absolute URL for canonical
 const prevPageUrl = currentPage > 1 ? `${url}/category/${slugify(categoryName)}/${currentPage - 1}` : null;
@@ -146,7 +146,6 @@ const schemaCollectionPage = {
 <Layout
   title={`Video ${categoryName} Terbaru - Halaman ${currentPage} | ${nama}`}
   description={`Nonton video ${categoryName} terlengkap di ${nama}. Halaman ${currentPage} dari ${totalPages}. Kumpulan video berkualitas tinggi, update rutin, dan gratis!`}
-  preconnectDomains={preconnectDomains}
 >
 
   {prevPageUrl && <link rel="prev" href={prevPageUrl} />}
