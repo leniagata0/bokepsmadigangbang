@@ -133,6 +133,11 @@ const schemaCollectionPage = {
   "inLanguage": "id-ID"
 };
 
+const pageSchemas = [
+  schemaBreadcrumb,
+  schemaCollectionPage
+];
+
 const pageKeywords = `${categoryName}, video ${categoryName}, nonton ${categoryName}, ${nama}, halaman ${currentPage}`;
 
 ---
@@ -140,16 +145,14 @@ const pageKeywords = `${categoryName}, video ${categoryName}, nonton ${categoryN
 <Layout
   title={`Video ${categoryName} Terbaru - Halaman ${currentPage} | ${nama}`}
   description={`Nonton video ${categoryName} terlengkap di ${nama}. Halaman ${currentPage} dari ${totalPages}. Kumpulan video berkualitas tinggi, update rutin, dan gratis!`}
-  preconnectDomains={preconnectDomains} // Meneruskan domain yang sudah dikumpulkan dari getStaticPaths
+  preconnectDomains={preconnectDomains}
   siteUrl={url}
   keywords={pageKeywords}
+  schemaJsonLd={pageSchemas}
 >
 
   {prevPageUrl && <link rel="prev" href={prevPageUrl} />}
   {nextPageUrl && <link rel="next" href={nextPageUrl} />}
-
-  <script type="application/ld+json" set:html={JSON.stringify(schemaBreadcrumb)} />
-  <script type="application/ld+json" set:html={JSON.stringify(schemaCollectionPage)} />
 
   <main class="category-page" itemscope itemtype="http://schema.org/CollectionPage">
     <nav class="breadcrumb" aria-label="breadcrumb">
