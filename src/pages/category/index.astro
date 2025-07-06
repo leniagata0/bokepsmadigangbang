@@ -9,7 +9,7 @@ const allVideos: VideoData[] = await getAllVideos();
 
 const categoryData: { [key: string]: { count: number; thumbnails: string[]; } } = {};
 const allThumbnailDomains = new Set<string>();
-
+const preconnectDomains = Array.from(allDomains);
 allVideos.forEach(video => {
   if (!categoryData[video.category]) {
     categoryData[video.category] = {
@@ -98,6 +98,7 @@ const schemaWebPage = {
   description={`Jelajahi berbagai kategori video ${nama} terlengkap. Temukan video berdasarkan ${categories.slice(0, 3).map(cat => cat.name).join(', ')}${categories.length > 3 ? ', dan banyak kategori lainnya' : ''}. Nonton online gratis sekarang!`}
   siteName={nama}
   siteUrl={url}
+  preconnectDomains={preconnectDomains}
 >
   <script type="application/ld+json" set:html={JSON.stringify(schemaBreadcrumb)} />
   <script type="application/ld+json" set:html={JSON.stringify(schemaWebPage)} />
