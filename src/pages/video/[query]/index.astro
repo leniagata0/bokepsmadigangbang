@@ -1,12 +1,80 @@
 ---
-// src/pages/cari/[query]/index.astro
-// Ini akan mengalihkan /cari/keyword ke /cari/keyword/1
+// src/pages/video/index.astro
+// Fungsi ini akan mengalihkan /video/?query=keyword ke /video/keyword/1
 
 import { Astro } from 'astro';
+import { slugify } from '../../utils/slugify.ts'; // Pastikan path ini benar
 
-const { query } = Astro.params;
+const rawQueryFromSearch = Astro.url.searchParams.get('query');
 
-// Alihkan ke halaman pertama paginasi
-// Ini akan menghasilkan HTTP 302 redirect
-return Astro.redirect(`/video/${query}/1`);
+if (rawQueryFromSearch) {
+  const slugifiedQuery = slugify(decodeURIComponent(rawQueryFromSearch));
+  // Melakukan redirect 302 (Moved Temporarily)
+  // Ini akan mengarahkan browser dan crawler ke URL bersih
+  return Astro.redirect(`/video/${slugifiedQuery}/1`);
+}
+
+// Jika tidak ada query parameter, Anda bisa:
+// 1. Redirect ke halaman utama:
+// return Astro.redirect('/');
+// 2. Atau menampilkan pesan/konten default (seperti video acak atau instruksi):
+// Lanjutkan rendering konten di bawah ini
+const url = import.meta.env.PUBLIC_SITE_URL;
+const nama = import.meta.env.PUBLIC_SITE_NAME;
+const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
+
+const randomPostsBelowSearch = []; // Isi dengan logika video acak jika diperlukan
+// const allVideos = await getAllVideos(); // Jika Anda perlu mengambil semua video di sini
+// randomPostsBelowSearch = allVideos.sort(() => 0.5 - Math.random()).slice(0, 12);
+
+// Untuk breadcrumbs dan judul halaman jika tidak ada query
+const displayQuery = "Pencarian";
+const breadcrumbs = [
+  { name: 'Home', url: `${url}` },
+  { name: displayQuery, url: null },
+];
+
 ---
+
+<Layout
+  title={`Pencarian di ${nama}`}
+  description={`Halaman pencarian ${desk} di ${nama}.`}
+  // preconnectDomains={preconnectDomains} // Jika Anda memiliki preconnect domains di sini
+>
+  <main class="search-page">
+    <nav class="breadcrumb" aria-label="breadcrumb">
+      <ol>
+        {breadcrumbs.map((item, index) => (
+          <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            {index > 0 && <span class="separator">/</span>}
+            {item.url ? (
+              <a itemprop="item" href={item.url}>
+                <span itemprop="name">{item.name}</span>
+              </a>
+            ) : (
+              <span itemprop="name">{item.name}</span>
+            )}
+            <meta itemprop="position" content={(index + 1).toString()} />
+          </li>
+        ))}
+      </ol>
+    </nav>
+    <h1 class="search-results-title">Pencarian Video</h1>
+
+    <p class="no-results-message">
+      Silakan masukkan kata kunci di kolom pencarian di atas untuk memulai pencarian video.
+    </p>
+    
+    {/* Contoh menampilkan video acak jika tidak ada query parameter */}
+    {randomPostsBelowSearch.length > 0 && (
+      <section class="random-videos-section">
+        <h2 class="section-title">Video Mungkin Anda Suka</h2>
+        <div class="video-grid">
+          {/* {randomPostsBelowSearch.map((video) => (
+            <VideoCard video={video} videoDetailPath={`/${slugify(video.title)}-${video.id}/`} />
+          ))} */}
+        </div>
+      </section>
+    )}
+  </main>
+</Layout>
