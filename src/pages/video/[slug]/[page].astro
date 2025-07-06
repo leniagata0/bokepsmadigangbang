@@ -136,7 +136,6 @@ if (searchWords.length > 0) {
     paginatedResults.forEach(video => {
       try {
         if (video.thumbnail) domainsSet.add(new URL(video.thumbnail).origin);
-        if (video.embedUrl) domainsSet.add(new URL(video.embedUrl).origin);
       } catch (e) {
         console.error(`URL tidak valid di JSON untuk video ID ${video.id} (pencarian paginasi):`, e);
       }
@@ -144,7 +143,6 @@ if (searchWords.length > 0) {
     randomPostsBelowSearch.forEach(video => {
       try {
         if (video.thumbnail) domainsSet.add(new URL(video.thumbnail).origin);
-        if (video.embedUrl) domainsSet.add(new URL(video.embedUrl).origin);
       } catch (e) {
         console.error(`URL tidak valid di JSON untuk video ID ${video.id} (random posts):`, e);
       }
