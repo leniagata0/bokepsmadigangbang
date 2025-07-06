@@ -205,18 +205,14 @@ const schemaBreadcrumb = {
         <p class="no-videos-overall">Belum ada video yang tersedia di portal ini.</p>
       ) : (
         sortedCategories.map(categoryName => (
-          <div class="category-group"><h2 class="category-title">
-              Video {categoryName} Terbaru
-            </h2>
-            <div class="video-grid">
+          <div class="category-group"><h2 class="category-title">Video {categoryName} Terbaru</h2><div class="video-grid">
               {finalVideosByCategory[categoryName].length === 0 ? (
                 <p class="no-videos-in-category">Tidak ada video dalam kategori ini.</p>
               ) : (
                 finalVideosByCategory[categoryName].map((video) => (
                   <VideoCard video={video} headingLevel="h3" />
                 ))
-              )}
-            </div>
+              )}</div>
             {videosByCategory[categoryName] && videosByCategory[categoryName].length > numberOfVideosPerCategory && (
               <div class="view-all-button-container">
                 <a href={`${currentUrl}/category/${slugify(categoryName)}/1`} class="view-all-button">Lihat Semua Video {categoryName}</a>
