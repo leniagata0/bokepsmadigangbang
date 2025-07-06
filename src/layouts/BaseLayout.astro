@@ -31,9 +31,19 @@ const websiteSchema = {
   "name": siteName,
   "url": currentUrl,
   "description": siteDescription,
+  "publisher": {
+    "@type": "Organization",
+    "name": siteName,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${currentUrl}/logo.png`
+    }
   "potentialAction": {
     "@type": "SearchAction",
-    "target": `${currentUrl}/video/{query}`,
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": `${currentUrl}/video/{query}/1`
+    },
     "query-input": "required name=query"
   }
 };
