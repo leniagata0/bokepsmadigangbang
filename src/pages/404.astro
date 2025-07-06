@@ -32,8 +32,6 @@ randomVideos.forEach(video => {
   }
 });
 
-const preconnectDomains = Array.from(allDomains);
-
 const breadcrumbs = [
   { name: 'Home', url: `${url}` },
   { name: 'Halaman Tidak Ditemukan', url: null },
@@ -43,7 +41,6 @@ const breadcrumbs = [
 <Layout
   title={`404 - Halaman Tidak Ditemukan | ${nama}`}
   description={`Maaf, halaman yang Anda cari tidak dapat ditemukan di ${nama}.`}
-  preconnectDomains={preconnectDomains}
   siteName={nama}
   siteUrl={url}
 >
