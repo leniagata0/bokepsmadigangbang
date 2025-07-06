@@ -9,26 +9,14 @@ export async function getStaticPaths() {
   return [];
 }
 
-// Mengambil variabel dari environment (seperti PUBLIC_SITE_URL, dll.)
-const url = import.meta.env.PUBLIC_SITE_URL;
-const nama = import.meta.env.PUBLIC_SITE_NAME;
-const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
-
 const { query, page } = Astro.params;
+const originalQuery = query ? decodeURIComponent(query) : '';
 const currentPage = page ? parseInt(page) : 1;
 const videosPerPage = 40;
 
-// --- PERBAIKAN KRITIS: Fleksibilitas originalQuery untuk mendukung URL bersih & fallback SEO ---
-const rawQueryFromParams = query ? decodeURIComponent(query) : '';
-const rawQueryFromSearch = Astro.url.searchParams.get('query') ? decodeURIComponent(Astro.url.searchParams.get('query')!) : '';
-
-// originalQuery akan mengambil dari params (URL bersih) atau dari search params (fallback)
-const originalQuery = rawQueryFromParams || rawQueryFromSearch;
-// -----------------------------------------------------------------------------------------
-
 const searchInput = originalQuery.toLowerCase().trim();
 
-// --- PERBAIKAN: Tambahkan kembali Stop Words yang relevan ---
+// --- Daftar Kata yang Dikecualikan (Stop Words) ---
 const stopWords = new Set([
   'yang', 'dan', 'atau', 'di', 'ke', 'dari', 'untuk', 'dengan', 'pada', 'adalah',
   'itu', 'ini', 'mereka', 'dia', 'saya', 'kami', 'kita', 'kamu', 'anda', 'mereka',
@@ -39,9 +27,8 @@ const stopWords = new Set([
   'begitu', 'begini', 'sini', 'situ', 'mana', 'siapa', 'apa', 'mengapa',
   'bagaimana', 'dimana', 'kapan', 'kalau', 'walaupun', 'meskipun', 'bahkan', 'hingga',
   'sampai', 'baik', 'buruk',
-  'bokep', 'indo', 'video', 'vidio', // Ditambahkan kembali untuk filtering yang lebih baik
+  // Tambahkan kata-kata lain yang ingin Anda kecualikan
 ]);
-// --------------------------------------------------------------------
 
 // Proses searchInput untuk mendapatkan kata kunci yang bersih
 const searchWords = searchInput
@@ -72,8 +59,9 @@ if (searchWords.length > 0) {
       const videoContent = [videoTitle, videoDescription, videoCategory, videoTags].join(' ');
 
       let score = 0;
-      let matchedWordCount = 0;
+      let matchedWordCount = 0; // Menghitung berapa banyak kata kunci yang cocok
 
+      // Cek apakah video mengandung SETIDAKNYA SATU kata kunci (setelah difilter stop words)
       const containsAnyWord = searchWords.some(word => {
         if (videoContent.includes(word)) {
           matchedWordCount++;
@@ -83,24 +71,32 @@ if (searchWords.length > 0) {
       });
 
       if (containsAnyWord) {
+        // Bonus untuk setiap kata kunci yang cocok (semakin banyak semakin baik)
         score += matchedWordCount * 20;
 
+        // 1. Kecocokan di Judul (paling relevan)
         searchWords.forEach(word => {
           if (videoTitle.includes(word)) {
             score += 50;
           }
         });
 
-        if (videoTitle.includes(searchInput)) { // Kecocokan frasa lengkap dari input asli
+        // 2. Kecocokan Frasa Lengkap di Judul (gunakan searchInput asli jika ingin frasa lengkap)
+        // Perhatian: searchInput masih mengandung stop words. Jika Anda hanya ingin frasa dari non-stop words,
+        // Anda perlu merekonstruksi frasa tersebut dari searchWords, atau mempertimbangkan cara lain.
+        // Untuk saat ini, kita biarkan searchInput asli untuk kecocokan frasa lengkap.
+        if (videoTitle.includes(searchInput)) {
           score += 200;
         }
 
+        // 3. Kecocokan di Deskripsi
         searchWords.forEach(word => {
           if (videoDescription.includes(word)) {
             score += 10;
           }
         });
         
+        // 4. Kecocokan di Kategori atau Tags
         searchWords.forEach(word => {
             if (videoCategory.includes(word) || videoTags.includes(word)) {
                 score += 30;
@@ -158,6 +154,7 @@ if (searchWords.length > 0) {
     });
     preconnectDomains = Array.from(domainsSet);
 
+
   } catch (error) {
     console.error('Gagal melakukan pencarian atau mengambil video acak:', error);
     searchResults = [];
@@ -184,7 +181,7 @@ if (searchWords.length > 0) {
 }
 
 
-const baseSearchUrl = `${url}/video/${originalQuery}`;
+const baseSearchUrl = `/video/${originalQuery}`;
 
 function capitalizeWords(str: string): string {
   const words = str
@@ -199,6 +196,9 @@ function capitalizeWords(str: string): string {
 }
 
 const displayQuery = capitalizeWords(originalQuery);
+const url = import.meta.env.PUBLIC_SITE_URL;
+const nama = import.meta.env.PUBLIC_SITE_NAME;
+const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
 
 const breadcrumbs = [
   { name: 'Home', url: `${url}` },
@@ -242,9 +242,8 @@ const breadcrumbs = [
       </p>
     ) : (
       <div class="video-grid" itemprop="mainContentOfPage">
-        {/* PERBAIKAN: Pastikan konsistensi trailing slash */}
         {paginatedResults.map((video) => (
-          <VideoCard video={video} videoDetailPath={`/${slugify(video.title)}-${video.id}/`} />
+          <VideoCard video={video} videoDetailPath={`/${slugify(video.title)}-${video.id}`} />
         ))}
       </div>
     )}
@@ -253,7 +252,6 @@ const breadcrumbs = [
       <section class="random-videos-section">
         <h2 class="section-title">Video Mungkin Anda Suka</h2>
         <div class="video-grid">
-          {/* PERBAIKAN: Pastikan konsistensi trailing slash */}
           {randomPostsBelowSearch.map((video) => (
             <VideoCard video={video} videoDetailPath={`/${slugify(video.title)}-${video.id}/`} />
           ))}
@@ -272,7 +270,6 @@ const breadcrumbs = [
           <a
             href={`${baseSearchUrl}/${pageNumber}`}
             class={`pagination-link ${pageNumber === currentPage ? 'active' : ''}`}
-            { ... (pageNumber === currentPage && { 'aria-current': 'page' }) }
           >
             {pageNumber}
           </a>
@@ -283,5 +280,75 @@ const breadcrumbs = [
         )}
       </nav>
     )}
+
   </main>
 </Layout>
+
+<style>
+  .no-results-message {
+    text-align: center;
+    padding: var(--spacing-unit) calc(var(--spacing-unit) * 1.5);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin: calc(var(--spacing-unit) * 2) auto;
+    max-width: 600px;
+    box-shadow: var(--shadow-light);
+  }
+
+  .pagination-link.ellipsis {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--text-color-light);
+    cursor: default;
+  }
+
+  .random-videos-section {
+    margin-top: calc(var(--spacing-unit) * 3);
+    padding-top: calc(var(--spacing-unit) * 2);
+    border-top: 1px solid var(--border-color);
+  }
+
+  .random-videos-section .section-title {
+    text-align: center;
+    margin-bottom: var(--spacing-unit);
+    color: var(--heading-color);
+    font-size: 1.8em;
+  }
+
+  .search-form-404 {
+    margin-top: calc(var(--spacing-unit) * 2);
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-unit);
+  }
+
+  .search-form-404 p {
+    margin-bottom: var(--spacing-unit-small);
+    color: var(--text-color);
+  }
+
+  .search-form-404 input[type="text"] {
+    padding: 0.7em;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-small);
+    margin-right: var(--spacing-unit-small);
+    width: 200px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+
+  .search-form-404 button {
+    padding: 0.7em 1.2em;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .search-form-404 button:hover {
+    background-color: var(--secondary-color-hover);
+  }
+</style>
