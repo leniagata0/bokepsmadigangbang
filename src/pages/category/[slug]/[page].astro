@@ -85,7 +85,6 @@ export async function getStaticPaths() {
 }
 const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
-const preconnectDomains = Array.from(allDomains);
 
 const { categoryName, currentPage, totalPages, videos: paginatedVideos } = Astro.props;
 
