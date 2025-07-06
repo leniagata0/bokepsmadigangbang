@@ -9,11 +9,11 @@ import { slugify } from '../utils/slugify';
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const allVideos: VideoData[] = await getAllVideos();
-  return allVideos.map(video => ({
-    params: { slug: `${slugify(video.title)}-${video.id}` },
-    props: { video, allVideos },
-  }));
+  const allVideos: VideoData[] = await getAllVideos();
+  return allVideos.map(video => ({
+    params: { slug: `${slugify(video.title)}-${video.id}` },
+    props: { video, allVideos },
+  }));
 }
 
 const { video, allVideos } = Astro.props;
@@ -23,112 +23,112 @@ let relatedVideos: VideoData[] = [];
 
 // 1. Persiapan kata kunci dari judul video saat ini
 const currentVideoTitleKeywords = video.title
-  .toLowerCase()
-  .split(/\s+/)
-  .filter(word => word.length > 2 && !['yang', 'dan', 'atau', 'di', 'ke', 'dari', 'untuk', 'dengan', 'pada', 'adalah',
-  'itu', 'ini', 'mereka', 'dia', 'saya', 'kami', 'kita', 'kamu', 'anda', 'mereka',
-  'tidak', 'bukan', 'akan', 'sudah', 'telah', 'belum', 'ada', 'pun', 'saja', 'juga',
-  'hanya', 'sangat', 'lebih', 'paling', 'saat', 'ketika', 'jika', 'agar', 'supaya',
-  'tetapi', 'namun', 'serta', 'seperti', 'yaitu', 'yakni', 'ialah', 'adapun', 'maka',
-  'oleh', 'sejak', 'tanpa', 'melalui', 'tentang', 'terhadap',
-  'begitu', 'begini', 'sini', 'situ', 'mana', 'siapa', 'apa', 'mengapa',
-  'bagaimana', 'dimana', 'kapan', 'kalau', 'walaupun', 'meskipun', 'bahkan', 'hingga',
-  'sampai', 'baik', 'buruk'
+  .toLowerCase()
+  .split(/\s+/)
+  .filter(word => word.length > 2 && !['yang', 'dan', 'atau', 'di', 'ke', 'dari', 'untuk', 'dengan', 'pada', 'adalah',
+  'itu', 'ini', 'mereka', 'dia', 'saya', 'kami', 'kita', 'kamu', 'anda', 'mereka',
+  'tidak', 'bukan', 'akan', 'sudah', 'telah', 'belum', 'ada', 'pun', 'saja', 'juga',
+  'hanya', 'sangat', 'lebih', 'paling', 'saat', 'ketika', 'jika', 'agar', 'supaya',
+  'tetapi', 'namun', 'serta', 'seperti', 'yaitu', 'yakni', 'ialah', 'adapun', 'maka',
+  'oleh', 'sejak', 'tanpa', 'melalui', 'tentang', 'terhadap',
+  'begitu', 'begini', 'sini', 'situ', 'mana', 'siapa', 'apa', 'mengapa',
+  'bagaimana', 'dimana', 'kapan', 'kalau', 'walaupun', 'meskipun', 'bahkan', 'hingga',
+  'sampai', 'baik', 'buruk'
 ].includes(word) && !['bokep', 'video', 'jepang', 'indo'].includes(word));
 
-const candidateVideos = allVideos.filter(v => 
-    v.id !== video.id && 
-    v.title.toLowerCase() !== video.title.toLowerCase() 
+const candidateVideos = allVideos.filter(v => 
+    v.id !== video.id && 
+    v.title.toLowerCase() !== video.title.toLowerCase() 
 );
 
 const scoredCandidates = candidateVideos.map(v => {
-  let score = 0;
-  const otherVideoTitle = v.title.toLowerCase();
+  let score = 0;
+  const otherVideoTitle = v.title.toLowerCase();
 
-  if (v.category === video.category) {
-    score += 100;
-  }
+  if (v.category === video.category) {
+    score += 100;
+  }
 
-  currentVideoTitleKeywords.forEach(keyword => {
-    if (otherVideoTitle.includes(keyword)) {
-      score += 5;
-    }
-  });
+  currentVideoTitleKeywords.forEach(keyword => {
+    if (otherVideoTitle.includes(keyword)) {
+      score += 5;
+    }
+  });
 
-  return { video: v, score };
+  return { video: v, score };
 });
 
 scoredCandidates.sort((a, b) => {
-  if (b.score === a.score) {
-    return 0.5 - Math.random(); 
-  }
-  return b.score - a.score;
+  if (b.score === a.score) {
+    return 0.5 - Math.random(); 
+  }
+  return b.score - a.score;
 });
 
 const addedVideoIds = new Set<string>();
 const addedVideoTitles = new Set<string>();
 
 for (const scoredV of scoredCandidates) {
-  if (relatedVideos.length >= numberOfRelatedVideos) {
-    break;
-  }
-  const lowerCaseTitle = scoredV.video.title.toLowerCase();
-  if (!addedVideoIds.has(scoredV.video.id) && !addedVideoTitles.has(lowerCaseTitle)) {
-    relatedVideos.push(scoredV.video);
-    addedVideoIds.add(scoredV.video.id);
-    addedVideoTitles.add(lowerCaseTitle);
-  }
+  if (relatedVideos.length >= numberOfRelatedVideos) {
+    break;
+  }
+  const lowerCaseTitle = scoredV.video.title.toLowerCase();
+  if (!addedVideoIds.has(scoredV.video.id) && !addedVideoTitles.has(lowerCaseTitle)) {
+    relatedVideos.push(scoredV.video);
+    addedVideoIds.add(scoredV.video.id);
+    addedVideoTitles.add(lowerCaseTitle);
+  }
 }
 
 if (relatedVideos.length < numberOfRelatedVideos) {
-  const remainingSlots = numberOfRelatedVideos - relatedVideos.length;
-  const otherVideosForRandom = allVideos.filter(v => 
-    v.id !== video.id && 
-    v.title.toLowerCase() !== video.title.toLowerCase() && 
-    !addedVideoIds.has(v.id) &&
-    !addedVideoTitles.has(v.title.toLowerCase())
-  );
-  const shuffledOthersForRandom = otherVideosForRandom.sort(() => 0.5 - Math.random());
-  relatedVideos.push(...shuffledOthersForRandom.slice(0, remainingSlots));
+  const remainingSlots = numberOfRelatedVideos - relatedVideos.length;
+  const otherVideosForRandom = allVideos.filter(v => 
+    v.id !== video.id && 
+    v.title.toLowerCase() !== video.title.toLowerCase() && 
+    !addedVideoIds.has(v.id) &&
+    !addedVideoTitles.has(v.title.toLowerCase())
+  );
+  const shuffledOthersForRandom = otherVideosForRandom.sort(() => 0.5 - Math.random());
+  relatedVideos.push(...shuffledOthersForRandom.slice(0, remainingSlots));
 }
 
-const numberOfRandomVideos = 16; 
+const numberOfRandomVideos = 16; 
 const currentAndRelatedVideoIds = new Set([video.id, ...relatedVideos.map(v => v.id)]);
 const currentAndRelatedVideoTitles = new Set([video.title.toLowerCase(), ...relatedVideos.map(v => v.title.toLowerCase())]); // Ambil judul dari related juga
 
-const videosForRandomSelection = allVideos.filter(v => 
-    !currentAndRelatedVideoIds.has(v.id) &&
-    !currentAndRelatedVideoTitles.has(v.title.toLowerCase())
+const videosForRandomSelection = allVideos.filter(v => 
+    !currentAndRelatedVideoIds.has(v.id) &&
+    !currentAndRelatedVideoTitles.has(v.title.toLowerCase())
 );
 
 const randomVideos = videosForRandomSelection
-  .sort(() => 0.5 - Math.random())
-  .slice(0, numberOfRandomVideos);
+  .sort(() => 0.5 - Math.random())
+  .slice(0, numberOfRandomVideos);
 
 const allDomains = new Set<string>();
 try {
-  if (video.thumbnail) allDomains.add(new URL(video.thumbnail).origin);
-  if (video.embedUrl) allDomains.add(new URL(video.embedUrl).origin);
+  if (video.thumbnail) allDomains.add(new URL(video.thumbnail).origin);
+  if (video.embedUrl) allDomains.add(new URL(video.embedUrl).origin);
 } catch (e) {
-  console.error(`URL thumbnail/video tidak valid untuk video ID ${video.id} (current video):`, e);
+  console.error(`URL thumbnail/video tidak valid untuk video ID ${video.id} (current video):`, e);
 }
 
 relatedVideos.forEach(v => {
-  try {
-    if (v.thumbnail) allDomains.add(new URL(v.thumbnail).origin);
-    if (v.embedUrl) allDomains.add(new URL(v.embedUrl).origin);
-  } catch (e) {
-    console.error(`URL thumbnail/video tidak valid untuk video ID ${v.id} (related video):`, e);
-  }
+  try {
+    if (v.thumbnail) allDomains.add(new URL(v.thumbnail).origin);
+    if (v.embedUrl) allDomains.add(new URL(v.embedUrl).origin);
+  } catch (e) {
+    console.error(`URL thumbnail/video tidak valid untuk video ID ${v.id} (related video):`, e);
+  }
 });
 
 randomVideos.forEach(v => {
-  try {
-    if (v.thumbnail) allDomains.add(new URL(v.thumbnail).origin);
-    if (v.embedUrl) allDomains.add(new URL(v.embedUrl).origin);
-  } catch (e) {
-    console.error(`URL thumbnail/video tidak valid untuk video ID ${v.id} (random video):`, e);
-  }
+  try {
+    if (v.thumbnail) allDomains.add(new URL(v.thumbnail).origin);
+    if (v.embedUrl) allDomains.add(new URL(v.embedUrl).origin);
+  } catch (e) {
+    console.error(`URL thumbnail/video tidak valid untuk video ID ${v.id} (random video):`, e);
+  }
 });
 
 const url = import.meta.env.PUBLIC_SITE_URL;
@@ -137,185 +137,214 @@ const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
 const terbit = import.meta.env.PUBLIC_SITE_PUBLISHED_DATE;
 
 const breadcrumbs = [
-  { name: 'Home', url: `${url}` },
-  { name: video.category, url: `${url}/category/${slugify(video.category)}/1` },
-  { name: video.title },
+  { name: 'Home', url: `${url}` },
+  { name: video.category, url: `${url}/category/${slugify(video.category)}/1` },
+  { name: video.title },
 ];
 
 const datePublished = video.datePublished || terbit;
 const dateModified = video.dateModified || new Date().toISOString();
 
+// --- Helper function to convert seconds to ISO 8601 duration format ---
+function toISO8601Duration(seconds: number | string): string {
+  if (typeof seconds === 'string') {
+    seconds = parseInt(seconds, 10);
+  }
+  if (isNaN(seconds) || seconds < 0) {
+    // Default to 26 seconds if invalid or not provided, matching your current fallback
+    return 'PT26S'; 
+  }
+
+  const hours = Math.floor(seconds / 3600);
+  seconds %= 3600;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  let durationString = 'PT';
+  if (hours > 0) durationString += `${hours}H`;
+  if (minutes > 0) durationString += `${minutes}M`;
+  if (remainingSeconds > 0) durationString += `${remainingSeconds}S`;
+
+  // Handle case where duration is 0, or if it was less than a second (e.g., 'PT0S' or 'PT1S' as minimal)
+  if (durationString === 'PT') {
+    return 'PT26S'; // Fallback to a default if 0 or unmeasurable
+  }
+  return durationString;
+}
+
+const formattedDuration = toISO8601Duration(video.duration || 26);
+
 const schemaWebPage = {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "url": `${url}/${slugify(video.title)}-${video.id}/`,
-  "name": `${video.title}`,
-  "description": `${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`, // Enhanced
-  "publisher": {
-    "@type": "Organization",
-    "name": nama,
-    "logo": {
-      "@type": "ImageObject",
-      "url": `${url}/logo.png`
-    }
-  },
-  "datePublished": datePublished,
-  "dateModified": dateModified,
-  "inLanguage": "id-ID"
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "url": `${url}/${slugify(video.title)}-${video.id}/`,
+  "name": `${video.title}`,
+  "description": `${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`,
+  "publisher": {
+    "@type": "Organization",
+    "name": nama,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${url}/logo.png`
+    }
+  },
+  "datePublished": datePublished,
+  "dateModified": dateModified,
+  "inLanguage": "id-ID"
 };
 
 const schemaVideoObject = {
-  "@context": "https://schema.org",
-  "@type": "VideoObject",
-  "name": video.title,
-  "description": `${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`, // Enhanced
-  "uploadDate": datePublished,
-  "embedUrl": video.embedUrl,
-  "thumbnailUrl": video.thumbnail,
-  "duration": video.duration || "PT0M0S",
-  "contentUrl": video.contentUrl || video.embedUrl,
-  "interactionCount": video.views || "0",
-  "keywords": video.tags ? video.tags.split(',').map(tag => tag.trim()).join(', ') : video.title,
-  "publisher": {
-    "@type": "Organization",
-    "name": nama,
-    "logo": {
-      "@type": "ImageObject",
-      "url": `${url}/logo.png`
-    }
-  },
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": video.title,
+  "description": `${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`, // Enhanced
+  "uploadDate": datePublished,
+  "embedUrl": video.embedUrl,
+  "thumbnailUrl": video.thumbnail,
+  "duration": formattedDuration,
+  "contentUrl": video.contentUrl || video.embedUrl,
+  "interactionCount": video.views || "1496",
+  "keywords": video.tags ? video.tags.split(',').map(tag => tag.trim()).join(', ') : video.title,
+  "publisher": {
+    "@type": "Organization",
+    "name": nama,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${url}/logo.png`
+    }
+  },
 };
 
 const schemaBreadcrumb = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": breadcrumbs.map((item, index) => ({
-    "@type": "ListItem",
-    "position": index + 1,
-    "name": item.name,
-    ...(item.url && { "item": item.url })
-  }))
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": breadcrumbs.map((item, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "name": item.name,
+    ...(item.url && { "item": item.url })
+  }))
 };
 const videoTags = typeof video.tags === 'string' && video.tags.length > 0
-  ? video.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
-  : [];
+  ? video.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+  : [];
 ---
 
 <Layout
-  title={`${video.title} - ${nama}`}
-  description={`${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`}
-  siteName={nama}
-  siteUrl={url}
+  title={`${video.title} - ${nama}`}
+  description={`${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`}
+  siteName={nama}
+  siteUrl={url}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(schemaWebPage)} />
-  <script type="application/ld+json" set:html={JSON.stringify(schemaVideoObject)} />
-  <script type="application/ld+json" set:html={JSON.stringify(schemaBreadcrumb)} />
+  <script type="application/ld+json" set:html={JSON.stringify(schemaWebPage)} />
+  <script type="application/ld+json" set:html={JSON.stringify(schemaVideoObject)} />
+  <script type="application/ld+json" set:html={JSON.stringify(schemaBreadcrumb)} />
 
-  <main class="video-detail-page">
-    <nav class="breadcrumb" aria-label="breadcrumb">
-      <ol vocab="https://schema.org/" typeof="BreadcrumbList">
-        {breadcrumbs.map((item, index) => (
-          <li property="itemListElement" typeof="ListItem">
-            {index > 0 && <span class="separator" aria-hidden="true">/</span>}
-            {item.url ? (
-              <a property="item" typeof="WebPage" href={item.url}>
-                <span property="name">{item.name}</span>
-              </a>
-            ) : (
-              <span property="name">{item.name}</span>
-            )}
-            <meta property="position" content={(index + 1).toString()} />
-          </li>
-        ))}
-      </ol>
-    </nav>
+  <main class="video-detail-page">
+    <nav class="breadcrumb" aria-label="breadcrumb">
+      <ol vocab="https://schema.org/" typeof="BreadcrumbList">
+        {breadcrumbs.map((item, index) => (
+          <li property="itemListElement" typeof="ListItem">
+            {index > 0 && <span class="separator" aria-hidden="true">/</span>}
+            {item.url ? (
+              <a property="item" typeof="WebPage" href={item.url}>
+                <span property="name">{item.name}</span>
+              </a>
+            ) : (
+              <span property="name">{item.name}</span>
+            )}
+            <meta property="position" content={(index + 1).toString()} />
+          </li>
+        ))}
+      </ol>
+    </nav>
 
-    <article itemscope itemtype="https://schema.org/VideoObject">
-      <meta itemprop="name" content={video.title} />
-      <meta itemprop="description" content={`${video.description} di ${nama} ${desk}`} />
-      <meta itemprop="uploadDate" content={datePublished} />
-      <meta itemprop="embedUrl" content={video.embedUrl} />
-      <meta itemprop="thumbnailUrl" content={video.thumbnail} />
-      {video.duration && <meta itemprop="duration" content={video.duration} />}
-      {video.contentUrl && <meta itemprop="contentUrl" content={video.contentUrl} />}
-      {video.views && <meta itemprop="interactionCount" content={video.views} />}
-      {video.tags && <meta itemprop="keywords" content={videoTags.join(', ')} />}
-      <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
-        <meta itemprop="name" content={nama} />
-        <div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
-          <meta itemprop="url" content={`${url}/logo.png`} />
-        </div>
-      </div>
+    <article itemscope itemtype="https://schema.org/VideoObject">
+      <meta itemprop="name" content={video.title} />
+      <meta itemprop="description" content={`${video.description} di ${nama} ${desk}`} />
+      <meta itemprop="uploadDate" content={datePublished} />
+      <meta itemprop="embedUrl" content={video.embedUrl} />
+      <meta itemprop="thumbnailUrl" content={video.thumbnail} />
+      {video.duration && <meta itemprop="duration" content={formattedDuration} />}
+      {video.contentUrl && <meta itemprop="contentUrl" content={video.contentUrl} />}
+      {video.views && <meta itemprop="interactionCount" content={video.views} />}
+      {video.tags && <meta itemprop="keywords" content={videoTags.join(', ')} />}
+      <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+        <meta itemprop="name" content={nama} />
+        <div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
+          <meta itemprop="url" content={`${url}/logo.png`} />
+        </div>
+      </div>
 
-      <div class="video-player-container">
-        <iframe
-          src={video.embedUrl}
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-          loading="eager"
-          width="100%"
-          height="300"
-          title={video.title}
-        ></iframe>
-      </div>
-      <h1 class="video-title" itemprop="headline">{video.title}</h1>
-    </article>
+      <div class="video-player-container">
+        <iframe
+          src={video.embedUrl}
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          loading="eager"
+          width="100%"
+          height="300"
+          title={video.title}
+        ></iframe>
+      </div>
+      <h1 class="video-title" itemprop="headline">{video.title}</h1>
+    </article>
 
-    <script type="text/javascript" src="https://js.juicyads.com/jp.php?c=947403z2v256s2x2x294z2b4&u=https%3A%2F%2Fwww.juicyads.rocks"></script>
-    <script type="text/javascript">      var juicy_tags = ['a', 'img'];    </script>
-    <script type="text/javascript" src="https://js.juicyads.com/jp.php?c=947403z2v256s2x2x294z2b4&u=https%3A%2F%2Fwww.juicyads.rocks"></script>
-    <div class="juicyads-ad-container" style="min-height: 100px; width: 100%; display: flex; justify-content: center; align-items: center; background-color: var(--card-bg); border-radius: var(--border-radius-medium); margin-bottom: var(--spacing-unit);">
-      <ins id="1078976" data-width="300" data-height="100"></ins>
-      <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1078976});</script>
-    </div>
+    <script type="text/javascript" src="https://js.juicyads.com/jp.php?c=947403z2v256s2x2x294z2b4&u=https%3A%2F%2Fwww.juicyads.rocks"></script>
+    <script type="text/javascript">      var juicy_tags = ['a', 'img'];    </script>
+    <script type="text/javascript" src="https://js.juicyads.com/jp.php?c=947403z2v256s2x2x294z2b4&u=https%3A%2F%2Fwww.juicyads.rocks"></script>
+    <div class="juicyads-ad-container" style="min-height: 100px; width: 100%; display: flex; justify-content: center; align-items: center; background-color: var(--card-bg); border-radius: var(--border-radius-medium); margin-bottom: var(--spacing-unit);">
+      <ins id="1078976" data-width="300" data-height="100"></ins>
+      <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1078976});</script>
+    </div>
 
-    <div class="video-description-container">
-      <p class="video-description" itemprop="description">{video.description}</p>
-      <p>Tonton video ${video.title} ini dan jelajahi koleksi video ${video.category} kami yang menakjubkan. Nikmati konten berkualitas tinggi.</p>
-    </div>
+    <div class="video-description-container">
+      <p class="video-description" itemprop="description">{video.description}</p>
+      <p>Tonton video {video.title} ini dan jelajahi koleksi video {video.category} kami yang menakjubkan. Nikmati konten berkualitas tinggi.</p>
+    </div>
 
 {videoTags.length > 0 && (
-      <section class="video-tags-section">
-        <h2 class="section-title">Tags:</h2>
-        <div class="tags-list">
-          {videoTags.map(tag => (
-            <a href={`${url}/video/${slugify(tag)}/1`} class="tag-chip" rel="tag">
-              {tag}
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+      <section class="video-tags-section">
+        <h2 class="section-title">Tags:</h2>
+        <div class="tags-list">
+          {videoTags.map(tag => (
+            <a href={`${url}/video/${slugify(tag)}/1`} class="tag-chip" rel="tag">
+              {tag}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
 
-    {relatedVideos.length > 0 && (
-      <section class="related-videos-section">
-        <h2 class="section-title">Video Terkait {video.title}</h2>
-        <div class="video-grid">
-          {relatedVideos.map((relatedVideo) => (
-            <VideoCard video={relatedVideo} videoDetailPath={`/${slugify(relatedVideo.title)}-${relatedVideo.id}/`} headingLevel="h3" />
-          ))}
-        </div>
-      </section>
-    )}
-    
-    {randomVideos.length > 0 && (
-      <section class="random-videos-section">
-        <div class="juicyads-ad-container" style="min-height: 262px; width: 100%; display: flex; justify-content: center; align-items: center; background-color: var(--card-bg); border-radius: var(--border-radius-medium); margin-bottom: var(--spacing-unit);">
-          <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
-          <ins id="1094678" data-width="300" data-height="262"></ins>
-          <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1094678});</script>
-          <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
-          <ins id="1058210" data-width="300" data-height="262"></ins>
-          <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1058210});</script>
-        </div>
-        <h2 class="section-title">Video Lainnya</h2>
-        <div class="video-grid">
-          {randomVideos.map((randomVideo) => (
-            <VideoCard video={randomVideo} videoDetailPath={`/${slugify(randomVideo.title)}-${randomVideo.id}/`} headingLevel="h3" />
-          ))}
-        </div>
-      </section>
-    )}
-  </main>
+    {relatedVideos.length > 0 && (
+      <section class="related-videos-section">
+        <h2 class="section-title">Video Terkait {video.title}</h2>
+        <div class="video-grid">
+          {relatedVideos.map((relatedVideo) => (
+            <VideoCard video={relatedVideo} videoDetailPath={`/${slugify(relatedVideo.title)}-${relatedVideo.id}/`} headingLevel="h3" />
+          ))}
+        </div>
+      </section>
+    )}
+    
+    {randomVideos.length > 0 && (
+      <section class="random-videos-section">
+        <div class="juicyads-ad-container" style="min-height: 262px; width: 100%; display: flex; justify-content: center; align-items: center; background-color: var(--card-bg); border-radius: var(--border-radius-medium); margin-bottom: var(--spacing-unit);">
+          <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+          <ins id="1094678" data-width="300" data-height="262"></ins>
+          <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1094678});</script>
+          <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+          <ins id="1058210" data-width="300" data-height="262"></ins>
+          <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1058210});</script>
+        </div>
+        <h2 class="section-title">Video Lainnya</h2>
+        <div class="video-grid">
+          {randomVideos.map((randomVideo) => (
+            <VideoCard video={randomVideo} videoDetailPath={`/${slugify(randomVideo.title)}-${randomVideo.id}/`} headingLevel="h3" />
+          ))}
+        </div>
+      </section>
+    )}
+  </main>
 </Layout>
