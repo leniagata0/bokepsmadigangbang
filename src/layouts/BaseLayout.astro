@@ -29,12 +29,12 @@ const ogImageFullUrl = new URL(`${url}/logo.png`, url).href;
 const websiteSchema = {
   "@context": "http://schema.org",
   "@type": "WebSite",
-  "name": siteName,
+  "name": nama,
   "url": url,
-  "description": description,
+  "description": desk,
   "publisher": {
     "@type": "Organization",
-    "name": siteName,
+    "name": nama,
     "logo": {
       "@type": "ImageObject",
       "url": `${url}/logo.png`
@@ -53,10 +53,10 @@ const websiteSchema = {
 const organizationSchema = {
   "@context": "http://schema.org",
   "@type": "Organization",
-  "name": siteName,
-  "url": siteUrl,
+  "name": nama,
+  "url": url,
   "logo": `${url}/logo.png`,
-  "description": description,
+  "description": desk,
   "sameAs": []
 };
 
@@ -104,7 +104,7 @@ const combinedJsonLdSchemas = [
   <body>
     <header>
       <nav class="main-nav">
-        <a href={siteUrl} class="logo" aria-label={`${siteName} - Beranda`}>{siteName}</a>
+        <a href={url} class="logo" aria-label={`${nama} - Beranda`}>{nama}</a>
         <form id="searchForm" action="/video/" method="get" class="search-form" role="search">
           <input type="search" name="query" placeholder="Cari video..." required />
           <button type="submit" aria-label="Mulai pencarian">Cari</button>
@@ -123,7 +123,7 @@ const combinedJsonLdSchemas = [
     <slot />
 
     <footer>
-      <p>&copy; {new Date().getFullYear()} {siteName}. All rights reserved.</p>
+      <p>&copy; {new Date().getFullYear()} {nama}. All rights reserved.</p>
     </footer>
     <script type="text/javascript" is:inline>document.addEventListener('DOMContentLoaded',()=>{const searchForm=document.getElementById('searchForm');if(searchForm){searchForm.addEventListener('submit',function(event){event.preventDefault();const input=searchForm.querySelector('input[name="query"]');const query=input?input.value.trim():'';if(query){const slugifiedQuery=query.toLowerCase().replace(/\s+/g,'-');window.location.href=`/video/${ slugifiedQuery }`}else{window.location.href=`/video/`}})}const toggleButton=document.getElementById('darkModeToggle');const body=document.body;const LIGHT_ICON='☀️';const DARK_ICON='🌙';const STORAGE_KEY='darkModeEnabled';function applyTheme(isDarkMode){if(isDarkMode){body.classList.add('dark-mode');toggleButton.textContent=DARK_ICON}else{body.classList.remove('dark-mode');toggleButton.textContent=LIGHT_ICON}}const savedMode=localStorage.getItem(STORAGE_KEY);if(savedMode==='true'){applyTheme(true)}else if(savedMode===null&&window.matchMedia('(prefers-color-scheme: dark)').matches){applyTheme(true)}else{applyTheme(false)}if(toggleButton){toggleButton.addEventListener('click',()=>{const isCurrentlyDarkMode=body.classList.contains('dark-mode');const newMode=!isCurrentlyDarkMode;applyTheme(newMode);localStorage.setItem(STORAGE_KEY,newMode)})}});</script>
   </body>
