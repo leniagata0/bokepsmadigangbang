@@ -3,7 +3,7 @@
 import Layout from '../layouts/BaseLayout.astro';
 import VideoCard from '../components/VideoCard.astro';
 import { getAllVideos, type VideoData } from '../utils/data';
-import { slugify } => '../utils/slugify';
+import { slugify } from '../utils/slugify';
 
 export const prerender = true;
 const url = import.meta.env.PUBLIC_SITE_URL;
