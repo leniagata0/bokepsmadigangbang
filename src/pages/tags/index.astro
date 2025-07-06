@@ -21,39 +21,33 @@ allVideos.forEach(video => {
 const filteredTags = Array.from(uniqueTags).filter(tag => {
   const lowerCaseTag = tag.toLowerCase();
 
-  // Aturan 1: Filter tag yang mengandung "bokep" diikuti dengan karakter acak, angka, atau strip, atau hanya "bokep".
-  // Contoh: "bokep [Flla3Hjihwg]", "bokep -", "bokep 1", "bokep b", "bokep 1241sde5fs", "bokep"
-  const isBokepAndRandom = /^bokep(\s+[\w\d\s\-]+)?$/i.test(lowerCaseTag);
+  // Aturan 1: Filter tag seperti "bokep xx" atau "bokep 123"
+  const isBokepTwoAlphanum = /^bokep\s+[a-z0-9]{2}$/i.test(lowerCaseTag);
+  const isBokepNumbers = /^bokep\s+\d+$/i.test(lowerCaseTag);
 
-  // Aturan 2: Filter tag yang hanya berisi string acak panjang (bukan kata wajar)
-  // Ini mendeteksi string yang didominasi oleh konsonan atau urutan karakter yang tidak umum.
-  // Ambang batas panjang: lebih dari 5 karakter, dan tidak mengandung vokal yang cukup (misal: kurang dari 2 vokal)
-  // atau mengandung urutan karakter yang aneh. Ini bisa disesuaikan.
-  const containsVowels = /[aeiouy]/i.test(lowerCaseTag);
-  const isPureRandomString = lowerCaseTag.length > 5 && !containsVowels; // Sangat sederhana, bisa diperkuat
+  // Aturan 2: Filter tag yang hanya satu kata dan sangat panjang (misal: randomstringpanjangsekali)
+  // Ini membantu membersihkan typo atau data yang korup yang tidak sengaja menjadi tag
+  const words = lowerCaseTag.split(/\s+/);
+  const isSingleLongRandomWord = words.length === 1 && words[0].length > 20; // Ambang batas 20 karakter, sesuaikan!
 
-  // Aturan 3: Filter tag yang hanya berisi angka atau kombinasi angka-huruf acak tanpa struktur kata yang jelas.
-  // Contoh: "5326jhge913", "12345", "abc123xyz"
-  // Regex ini mencari string yang didominasi oleh alfanumerik acak tanpa spasi dan tidak terlihat seperti kata biasa.
-  const isRandomAlphanumeric = /^(?=.*[0-9])(?=.*[a-z])[a-z0-9]{5,}$/i.test(lowerCaseTag) || /^\d+$/.test(lowerCaseTag);
-  // ^\d+$ menangkap hanya angka (misal "12345")
-  // ^(?=.*[0-9])(?=.*[a-z])[a-z0-9]{5,}$ menangkap kombinasi angka dan huruf minimal 5 karakter (misal "5326jhge913", "abc123xyz")
-
-  // Aturan 4: Daftar kata-kata tunggal pendek yang secara umum tidak relevan sebagai tag.
+  // Aturan 3: Filter tag yang hanya terdiri dari angka (misal: 12345, 987654321)
+  const isOnlyNumbers = /^\d+$/.test(lowerCaseTag);
+  
+  // Aturan 4: Filter kata-kata tunggal yang umum tidak relevan atau terlalu pendek
   const singleWordShortStopList = new Set([
-    'dan', 'atau', 'di', 'ini', 'itu', 'yang', 'video', 'film', 'movie', 'full',
-    'gratis', 'online', 'terbaru', 'download', 'hd', 'mp4', 'xxx', 'free', 'new',
-    'indo', 'indonesia', 'part', 'episode', 'series', 'clip', 'original', 'official'
-    // Tambahkan kata lain yang tidak ingin Anda tampilkan sebagai tag tunggal
+    'dan', 'atau', 'di', 'ini', 'itu', 'yang', // Contoh kata-kata tunggal pendek yang mungkin tidak relevan sebagai tag
+    'video', 'film', 'movie', 'full', 'gratis', 'online', 'terbaru', 'download', // Kata-kata deskriptif umum yang mungkin tidak spesifik sebagai tag
+    'hd', 'mp4', 'xxx', 'free', 'new', 'indo', 'indonesia', 'part', 'episode' // Contoh lain
   ]);
-  const wordsInTag = lowerCaseTag.split(/\s+/);
-  const isSingleWordAndInShortStopList = wordsInTag.length === 1 && singleWordShortStopList.has(lowerCaseTag);
+  const isSingleWordAndInShortStopList = words.length === 1 && singleWordShortStopList.has(lowerCaseTag);
+
 
   // Menggabungkan semua kondisi pengecualian
   return !(
-    isBokepAndRandom ||
-    isPureRandomString ||
-    isRandomAlphanumeric ||
+    isBokepTwoAlphanum ||
+    isBokepNumbers ||
+    isSingleLongRandomWord ||
+    isOnlyNumbers ||
     isSingleWordAndInShortStopList
   );
 });
