@@ -192,8 +192,7 @@ const schemaBreadcrumb = {
 
     <section class="random-videos-section">
     {randomVideos.length > 0 && (
-        <h2 class="section-title">Video Pilihan Kami</h2>
-        <div class="video-grid">
+        <h2 class="section-title">Video Pilihan Kami</h2><div class="video-grid">
           {randomVideos.map((video) => (
             <VideoCard video={video} headingLevel="h3" />
           ))}
@@ -206,8 +205,7 @@ const schemaBreadcrumb = {
         <p class="no-videos-overall">Belum ada video yang tersedia di portal ini.</p>
       ) : (
         sortedCategories.map(categoryName => (
-          <div class="category-group">
-            <h2 class="category-title">
+          <div class="category-group"><h2 class="category-title">
               Video {categoryName} Terbaru
             </h2>
             <div class="video-grid">
