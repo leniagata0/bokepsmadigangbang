@@ -54,41 +54,35 @@ if (searchWords.length > 0) {
       const videoContent = [videoTitle, videoDescription, videoCategory, videoTags].join(' ');
 
       let score = 0;
-      let matchedWordCount = 0;
-
-      const containsAnyWord = searchWords.some(word => {
-        if (videoContent.includes(word)) {
-          matchedWordCount++;
-          return true;
+      
+      searchWords.forEach(word => {
+        if (videoTitle.includes(word)) {
+          score += 60;
         }
-        return false;
+        if (videoCategory.includes(word) || videoTags.includes(word)) {
+          score += 40;
+        }
+        if (videoDescription.includes(word)) {
+          score += 20;
+        }
       });
 
-      if (containsAnyWord) {
-        score += matchedWordCount * 20;
-
-        searchWords.forEach(word => {
-          if (videoTitle.includes(word)) {
-            score += 50;
-          }
-        });
-
-        if (videoTitle.includes(searchInput)) {
-          score += 200;
+      const uniqueMatchedWords = new Set<string>();
+      searchWords.forEach(word => {
+        if (videoContent.includes(word)) {
+          uniqueMatchedWords.add(word);
         }
+      });
 
-        searchWords.forEach(word => {
-          if (videoDescription.includes(word)) {
-            score += 10;
-          }
-        });
-        
-        searchWords.forEach(word => {
-            if (videoCategory.includes(word) || videoTags.includes(word)) {
-                score += 30;
-            }
-        });
+      if (uniqueMatchedWords.size === searchWords.length && searchWords.length > 1) {
+        score += 100;
+      }
+      
+      if (videoTitle.includes(searchInput) && searchInput.length > 0) {
+        score += 80;
+      }
 
+      if (score > 0) {
         scoredResults.push({ video, score });
       }
     });
@@ -269,7 +263,7 @@ const breadcrumbs = [
       </nav>
     )}
 
-     { (paginatedResults.length === 0 && searchWords.length > 0) && (
+      { (paginatedResults.length === 0 && searchWords.length > 0) && (
       <meta name="robots" content="noindex, follow" />
     )}
     { originalQuery === '' && (
