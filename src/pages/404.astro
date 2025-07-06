@@ -10,7 +10,6 @@ const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
 
 const allVideos: VideoData[] = await getAllVideos();
-const preconnectDomains = Array.from(allDomains);
 // Ambil beberapa video acak untuk ditampilkan
 const numberOfRandomVideos = 16;
 const randomVideos: VideoData[] = allVideos
@@ -31,6 +30,7 @@ randomVideos.forEach(video => {
     console.error(`[ERROR] URL thumbnail/video tidak valid untuk video ID ${video.id} (404 random videos):`, e);
   }
 });
+const preconnectDomains = Array.from(allDomains);
 
 const breadcrumbs = [
   { name: 'Home', url: `${url}` },
