@@ -1,4 +1,4 @@
-// /scripts/main.js
+// /scripts/preview.js
 document.querySelectorAll('.video-card').forEach(card => {
     const videoPreview = card.querySelector('.video-preview');
 
