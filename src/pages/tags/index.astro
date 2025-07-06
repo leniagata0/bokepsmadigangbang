@@ -29,8 +29,6 @@ const breadcrumbs = [
   { name: 'Semua Tags', url: `${url}/tags` },
 ];
 
-let preconnectDomains: string[] = [];
-
 const schemaBreadcrumb = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -68,7 +66,6 @@ const schemaWebPage = {
 <Layout
   title={`Semua Tags Video - ${nama} | Jelajahi Kategori Lengkap`}
   description={`Jelajahi daftar lengkap tags dan kategori video yang tersedia di ${nama}. Temukan konten favorit Anda berdasarkan topik dan genre. Navigasi cepat ke video yang Anda cari.`}
-  preconnectDomains={preconnectDomains}
   siteName={nama}
   siteUrl={url}
 >
@@ -103,7 +100,7 @@ const schemaWebPage = {
     ) : (
       <div class="tags-grid">
         {sortedTags.map(tag => (
-          <a href={`/video/${slugify(tag)}/1`} class="tag-card" rel="tag" title={`Lihat semua video dengan tag ${tag}`}>
+          <a href={`${url}/video/${slugify(tag)}/1`} class="tag-card" rel="tag" title={`Lihat semua video dengan tag ${tag}`}>
             {tag}
           </a>
         ))}
