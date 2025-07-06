@@ -26,21 +26,21 @@ const websiteSchema = {
   "@context": "http://schema.org",
   "@type": "WebSite",
   "name": siteName,
-  "url": siteUrl,
+  "url": url,
   "description": description,
   "publisher": {
     "@type": "Organization",
     "name": siteName,
     "logo": {
       "@type": "ImageObject",
-      "url": `${siteUrl}/logo.png`
+      "url": `${url}/logo.png`
     }
   },
   "potentialAction": {
     "@type": "SearchAction",
     "target": {
       "@type": "EntryPoint",
-      "urlTemplate": `${siteUrl}/video/{query}/1`
+      "urlTemplate": `${url}/video/{query}/1`
     },
     "query-input": "required name=query"
   }
@@ -51,7 +51,7 @@ const organizationSchema = {
   "@type": "Organization",
   "name": siteName,
   "url": siteUrl,
-  "logo": `${siteUrl}/logo.png`,
+  "logo": `${url}/logo.png`,
   "description": description,
   "sameAs": []
 };
@@ -97,9 +97,9 @@ const jsonLdSchemas = [
           <button type="submit" aria-label="Mulai pencarian">Cari</button>
         </form>
         <ul class="nav-links">
-          <li><a href={`${siteUrl}`}>Home</a></li>
-          <li><a href={`${siteUrl}/category/`}>Category</a></li>
-          <li><a href={`${siteUrl}/tags/`}>Tags</a></li>
+          <li><a href={`${url}`}>Home</a></li>
+          <li><a href={`${url}/category/`}>Category</a></li>
+          <li><a href={`${url}/tags/`}>Tags</a></li>
           <li>
             <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">☀️</button>
           </li>
