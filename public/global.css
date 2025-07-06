@@ -15,6 +15,7 @@
   --shadow-medium: 0 3px 6px rgba(0,0,0,0.12);
   --shadow-strong: 0 6px 12px rgba(0,0,0,0.18);
   --spacing-unit: 1rem;
+  --spacing-unit-small: 0.5rem; /* Menambahkan ini untuk 404 page */
   --font-body: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   --border-radius-small: 2px;
@@ -26,6 +27,9 @@
   --text-color-heading: var(--text-color);
   --text-color-body: var(--text-color);
   --button-text-color: white; /* Default button text color */
+  --primary-color-hover: #303F9F; /* Menambahkan ini untuk 404 page */
+  --secondary-color-hover: #37474F; /* Menambahkan ini untuk 404 page */
+  --heading-color: var(--text-color); /* Menambahkan ini untuk 404 page */
 }
 
 body.dark-mode {
@@ -50,6 +54,9 @@ body.dark-mode {
   --text-color-heading: var(--text-color);
   --text-color-body: var(--text-color-light);
   --button-text-color: var(--text-color); /* Adjust if buttons should be darker in dark mode */
+  --primary-color-hover: #4A4557; /* Menyesuaikan untuk dark mode */
+  --secondary-color-hover: #757575; /* Menyesuaikan untuk dark mode */
+  --heading-color: var(--text-color); /* Menyesuaikan untuk dark mode */
 }
 
 * {
@@ -933,6 +940,133 @@ footer {
 }
 /* --- End of New CSS for Short Video Page --- */
 
+/* --- Start of 404 Page Styles --- */
+.not-found-page {
+  text-align: center;
+  padding: calc(var(--spacing-unit) * 2) var(--spacing-unit);
+  flex-grow: 1; /* Allows it to take up available space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.not-found-content {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-medium);
+  padding: calc(var(--spacing-unit) * 2);
+  margin: calc(var(--spacing-unit) * 2) auto;
+  max-width: 700px;
+  box-shadow: var(--shadow-light);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.not-found-title {
+  font-size: 5em;
+  color: var(--accent-color);
+  margin-bottom: var(--spacing-unit-small);
+  transition: color 0.3s ease;
+}
+
+.not-found-message {
+  font-size: 1.5em;
+  color: var(--heading-color);
+  margin-bottom: var(--spacing-unit-small);
+  transition: color 0.3s ease;
+}
+
+.not-found-suggestion {
+  font-size: 1.1em;
+  color: var(--text-color-light);
+  margin-bottom: var(--spacing-unit);
+  transition: color 0.3s ease;
+}
+
+.button-primary {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
+  padding: 0.8em 1.5em;
+  border-radius: var(--border-radius-small);
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+  margin-top: var(--spacing-unit);
+}
+
+.button-primary:hover {
+  background-color: var(--primary-color-hover);
+}
+
+.search-form-404 {
+  margin-top: calc(var(--spacing-unit) * 2);
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-unit);
+  transition: border-color 0.3s ease;
+}
+
+.search-form-404 p {
+  margin-bottom: var(--spacing-unit-small);
+  color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
+.search-form-404 input[type="text"] {
+  padding: 0.7em;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-small);
+  margin-right: var(--spacing-unit-small);
+  width: 200px; /* Sesuaikan lebar */
+  background-color: var(--card-bg); /* Ensure it matches input styles */
+  color: var(--text-color); /* Ensure text color is correct */
+  transition: border-color 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.search-form-404 button {
+  padding: 0.7em 1.2em;
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-form-404 button:hover {
+  background-color: var(--secondary-color-hover);
+}
+
+.random-videos-section {
+  margin-top: calc(var(--spacing-unit) * 3);
+  padding-top: calc(var(--spacing-unit) * 2);
+  border-top: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
+}
+
+.random-videos-section .section-title {
+  text-align: center;
+  margin-bottom: var(--spacing-unit);
+  color: var(--heading-color);
+  font-size: 1.8em;
+  transition: color 0.3s ease;
+}
+/* --- End of 404 Page Styles --- */
+
+/* --- Start of Search No Results Message --- */
+.no-results-message {
+  text-align: center;
+  padding: var(--spacing-unit) calc(var(--spacing-unit) * 1.5);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin: calc(var(--spacing-unit) * 2) auto;
+  max-width: 600px;
+  box-shadow: var(--shadow-light);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+/* --- End of Search No Results Message --- */
+
 
 @media (max-width: 992px) {
   main {
@@ -1002,6 +1136,20 @@ footer {
   }
   .short-video-description {
     font-size: 0.95rem;
+  }
+
+  /* Responsive for 404 page */
+  .not-found-title {
+    font-size: 4em;
+  }
+  .not-found-message {
+    font-size: 1.3em;
+  }
+  .not-found-suggestion {
+    font-size: 1em;
+  }
+  .random-videos-section .section-title {
+    font-size: 1.5em;
   }
 }
 
@@ -1133,6 +1281,23 @@ footer {
   .video-container {
     max-width: 100%; /* Full width on very small screens */
   }
+
+  /* Responsive for 404 page */
+  .not-found-title {
+    font-size: 3em;
+  }
+  .not-found-message {
+    font-size: 1.2em;
+  }
+  .not-found-suggestion {
+    font-size: 0.95em;
+  }
+  .random-videos-section .section-title {
+    font-size: 1.2em;
+  }
+  .search-form-404 input[type="text"] {
+    width: 150px; /* Adjust width for smaller screens */
+  }
 }
 
 @media (max-width: 480px) {
@@ -1229,5 +1394,27 @@ footer {
   }
   .video-container {
     max-width: 100%; /* Full width on very small screens */
+  }
+
+  /* Responsive for 404 page */
+  .not-found-title {
+    font-size: 2.5em;
+  }
+  .not-found-message {
+    font-size: 1em;
+  }
+  .not-found-suggestion {
+    font-size: 0.85em;
+  }
+  .random-videos-section .section-title {
+    font-size: 1em;
+  }
+  .search-form-404 input[type="text"] {
+    width: 100%; /* Full width on very small screens */
+    margin-right: 0;
+    margin-bottom: var(--spacing-unit-small);
+  }
+  .search-form-404 button {
+    width: 100%;
   }
 }
