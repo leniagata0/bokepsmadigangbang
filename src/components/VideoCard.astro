@@ -47,4 +47,4 @@ const videoDetailPath = `${url}/${videoSlug}-${video.id}/`;
     )}
     <p class="video-category">{video.category}</p>
   </div></a>
-  <script src="/scripts/preview.js" is:inline></script> 
+<script type="text/javascript">document.querySelectorAll('.video-card').forEach(card=>{const videoPreview=card.querySelector('.video-preview');if(videoPreview){card.addEventListener('mouseenter',()=>{if(!card.classList.contains('video-preview-error')){const src=videoPreview.getAttribute('data-src');if(src&&videoPreview.src!==src){videoPreview.src=src;videoPreview.load()}videoPreview.play().catch(e=>{console.warn('Video playback failed, adding error class:',e);card.classList.add('video-preview-error')})}});card.addEventListener('mouseleave',()=>{if(videoPreview&&!videoPreview.paused){videoPreview.pause();videoPreview.currentTime=0}})}});</script>
