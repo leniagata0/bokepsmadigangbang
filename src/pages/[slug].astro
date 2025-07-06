@@ -17,7 +17,7 @@ export async function getStaticPaths() {
 }
 
 const { video, allVideos } = Astro.props;
-
+const preconnectDomains = Array.from(allDomains);
 const numberOfRelatedVideos = 16;
 let relatedVideos: VideoData[] = [];
 
@@ -234,6 +234,7 @@ const videoTags = typeof video.tags === 'string' && video.tags.length > 0
   title={`${video.title} - ${nama}`}
   description={`${video.description} | Tonton video ${video.title} terbaru di ${nama}. Temukan lebih banyak ${video.category} video.`}
   siteName={nama}
+  preconnectDomains={preconnectDomains}
   siteUrl={url}
 >
   <script type="application/ld+json" set:html={JSON.stringify(schemaWebPage)} />
