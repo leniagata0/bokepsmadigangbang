@@ -1,5 +1,6 @@
 ---
 // src/pages/video/[query]/[page].astro
+import { nama, url, desk } from '../../../utils/site.ts';
 import Layout from '../../../layouts/BaseLayout.astro';
 import VideoCard from '../../../components/VideoCard.astro';
 import { getAllVideos, type VideoData } from '../../../utils/data.ts';
@@ -26,11 +27,12 @@ const stopWords = new Set([
   'tidak', 'bukan', 'akan', 'sudah', 'telah', 'belum', 'ada', 'pun', 'saja', 'juga',
   'hanya', 'sangat', 'lebih', 'paling', 'saat', 'ketika', 'jika', 'agar', 'supaya',
   'tetapi', 'namun', 'serta', 'seperti', 'yaitu', 'yakni', 'ialah', 'adapun', 'maka',
-  'oleh', 'sejak', 'melalui', 'tentang', 'terhadap',
+  'oleh', 'sejak', 'tanpa', 'melalui', 'tentang', 'terhadap',
   'begitu', 'begini', 'sini', 'situ', 'mana', 'siapa', 'apa', 'mengapa',
   'bagaimana', 'dimana', 'kapan', 'kalau', 'walaupun', 'meskipun', 'bahkan', 'hingga',
-  'sampai', 'baik', 'buruk',
+  'sampai', 'baik', 'buruk', 'bokep', 'indo', 'video', 'vidio',
 ]);
+
 const searchWords = searchInput
     .replace(/-/g, ' ')
     .split(/\s+/)
@@ -136,6 +138,7 @@ if (searchWords.length > 0) {
         console.error(`URL tidak valid di JSON untuk video ID ${video.id} (random posts):`, e);
       }
     });
+    preconnectDomains = Array.from(domainsSet);
 
   } catch (error) {
     console.error('Gagal melakukan pencarian atau mengambil video acak:', error);
@@ -161,7 +164,6 @@ if (searchWords.length > 0) {
     preconnectDomains = Array.from(domainsSet);
 }
 
-
 const baseSearchUrl = `${url}/video/${originalQuery}`;
 
 function capitalizeWords(str: string): string {
@@ -177,9 +179,6 @@ function capitalizeWords(str: string): string {
 }
 
 const displayQuery = capitalizeWords(originalQuery);
-const url = import.meta.env.PUBLIC_SITE_URL;
-const nama = import.meta.env.PUBLIC_SITE_NAME;
-const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
 
 const breadcrumbs = [
   { name: 'Home', url: `${url}` },
@@ -190,11 +189,7 @@ const breadcrumbs = [
 
 <Layout
   title={`${displayQuery} di ${nama} | Page ${currentPage}`}
-  description={
-    searchResults.length > 0
-      ? `Temukan video terbaik tentang ${displayQuery}. Jelajahi hasil pencarian video terkait ${displayQuery} di ${nama}. Halaman ${currentPage}.`
-      : `Tidak ada hasil untuk '${displayQuery}'. Jelajahi video terbaru dan terpopuler di ${nama}. Halaman ${currentPage}.`
-  }
+  description={`${displayQuery} ${desk} di ${nama}. Page ${currentPage}.`}
   preconnectDomains={preconnectDomains}
 >
   <main class="search-page" itemscope itemtype="http://schema.org/SearchResultsPage">
@@ -223,7 +218,7 @@ const breadcrumbs = [
       </p>
     ) : paginatedResults.length === 0 ? (
       <p class="no-results-message">
-        Maaf, tidak ada video yang cocok dengan pencarian Anda. Coba kata kunci lain atau <a href="/">jelajahi video populer kami</a>.
+        Maaf, tidak ada video yang cocok dengan pencarian Anda. Coba kata kunci lain.
       </p>
     ) : (
       <div class="video-grid" itemprop="mainContentOfPage">
@@ -247,7 +242,7 @@ const breadcrumbs = [
     {totalPages > 1 && (
       <nav class="pagination" aria-label="Navigasi Page Pencarian">
         {currentPage > 1 && (
-          <a href={`${baseSearchUrl}/${currentPage - 1}`} class="pagination-link" rel="prev">&laquo; Sebelumnya</a>
+          <a href={`${baseSearchUrl}/${currentPage - 1}`} class="pagination-link">&laquo; Sebelumnya</a>
         )}
         {Array.from({ length: totalPages }, (_, i) => i + 1).filter(p =>
           p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2)
@@ -262,17 +257,9 @@ const breadcrumbs = [
         ))}
         {(currentPage + 2 < totalPages && totalPages > 5) && (currentPage < totalPages - 2) && <span class="pagination-link ellipsis">...</span>}
         {currentPage < totalPages && (
-          <a href={`${baseSearchUrl}/${currentPage + 1}`} class="pagination-link" rel="next">Berikutnya &raquo;</a>
+          <a href={`${baseSearchUrl}/${currentPage + 1}`} class="pagination-link">Berikutnya &raquo;</a>
         )}
       </nav>
     )}
-
-      { (paginatedResults.length === 0 && searchWords.length > 0) && (
-      <meta name="robots" content="noindex, follow" />
-    )}
-    { originalQuery === '' && (
-      <meta name="robots" content="noindex, follow" />
-    )}
-
   </main>
 </Layout>
