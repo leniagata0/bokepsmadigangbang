@@ -8,7 +8,7 @@ import { getAllVideos, type VideoData } from '../utils/data';
 export const prerender = true;
 
 const allVideos: VideoData[] = await getAllVideos();
-
+const preconnectDomains = Array.from(allDomains);
 const videosByCategory: { [key: string]: VideoData[] } = {};
 const numberOfVideosPerCategory = 16;
 
@@ -118,6 +118,7 @@ const siteDescription = desk;
   title={`${nama} - Video Bokep Indo Terbaru - Nonton Gratis Online`}
   description={`Nonton video streaming ${nama} terbaru secara gratis. Temukan koleksi video lengkap berdasarkan kategori seperti ${sortedCategories.slice(0, 3).join(', ')}${sortedCategories.length > 3 ? ', dan banyak lagi' : ''}.`}
   siteName={siteName}
+  preconnectDomains={preconnectDomains}
   siteUrl={currentUrl}
 >
 
