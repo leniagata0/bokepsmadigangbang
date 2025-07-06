@@ -7,7 +7,7 @@ export const prerender = true;
 
 const allVideos: VideoData[] = await getAllVideos();
 const uniqueTags = new Set<string>();
-
+const preconnectDomains = Array.from(allDomains);
 allVideos.forEach(video => {
   if (typeof video.tags === 'string') {
     video.tags.split(',').forEach(tag => {
@@ -68,6 +68,7 @@ const schemaWebPage = {
   description={`Jelajahi daftar lengkap tags dan kategori video yang tersedia di ${nama}. Temukan konten favorit Anda berdasarkan topik dan genre. Navigasi cepat ke video yang Anda cari.`}
   siteName={nama}
   siteUrl={url}
+  preconnectDomains={preconnectDomains}
 >
     <script type="application/ld+json" set:html={JSON.stringify(schemaBreadcrumb)} />
   <script type="application/ld+json" set:html={JSON.stringify(schemaWebPage)} />
