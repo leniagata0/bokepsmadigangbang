@@ -4,7 +4,6 @@ import Layout from '../layouts/BaseLayout.astro';
 import VideoCard from '../components/VideoCard.astro';
 import { slugify } from '../utils/slugify';
 import { getAllVideos, type VideoData } from '../utils/data';
-import { nama, desk, url, terbit } from '../utils/site.ts';
 
 export const prerender = true;
 
@@ -99,11 +98,12 @@ randomVideos.forEach(video => {
   }
 });
 
-const preconnectDomains = Array.from(allDomains);
 const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
 const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
 const terbit = import.meta.env.PUBLIC_SITE_PUBLISHED_DATE;
+const google = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
+const yandex = import.meta.env.PUBLIC_YANDEX_SITE_VERIFICATION;
 
 const breadcrumbs = [
   { name: 'Home', url: `${url}` },
@@ -112,56 +112,14 @@ const breadcrumbs = [
 const currentUrl = url;
 const siteName = nama;
 const siteDescription = desk;
-
-const schemaWebSite = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "url": currentUrl,
-  "name": siteName,
-  "description": siteDescription,
-  "publisher": {
-    "@type": "Organization",
-    "name": siteName,
-    "logo": {
-      "@type": "ImageObject",
-      "url": `${currentUrl}/logo.png`
-    }
-  },
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": {
-      "@type": "EntryPoint",
-      "urlTemplate": `${currentUrl}/video/{query}/1`
-    },
-    "query-input": "required name=query"
-  }
-};
-
-const schemaOrganization = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": siteName,
-  "url": currentUrl,
-  "logo": `${currentUrl}/logo.png`,
-  "description": siteDescription,
-  // Add more properties if applicable, e.g., contact info, social links
-  // "sameAs": [
-  //   "https://facebook.com/yourpage",
-  //   "https://twitter.com/youraccount"
-  // ]
-};
-
 ---
 
 <Layout
   title={`${nama} - Video Bokep Indo Terbaru - Nonton Gratis Online`}
   description={`Nonton video streaming ${nama} terbaru secara gratis. Temukan koleksi video lengkap berdasarkan kategori seperti ${sortedCategories.slice(0, 3).join(', ')}${sortedCategories.length > 3 ? ', dan banyak lagi' : ''}.`}
-  preconnectDomains={preconnectDomains}
   siteName={siteName}
   siteUrl={currentUrl}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(schemaWebSite)} />
-  <script type="application/ld+json" set:html={JSON.stringify(schemaOrganization)} />
 
   <main class="home-page" itemscope itemtype="http://schema.org/WebPage">
     <meta itemprop="url" content={currentUrl} />
@@ -175,6 +133,8 @@ const schemaOrganization = {
     </div>
     <meta itemprop="datePublished" content={terbit}/>
     <meta itemprop="dateModified" content={new Date().toISOString()} />
+    <meta name="google-site-verification" content={google} />
+    <meta name="yandex-verification" content={yandex} />
 
     <section class="hero-section">
       <h1 itemprop="headline">Nonton Video Streaming {nama} Terbaru dan Terlengkap</h1>
