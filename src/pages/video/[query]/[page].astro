@@ -12,10 +12,7 @@ export async function getStaticPaths() {
 const { query, page } = Astro.params;
 const currentPage = page ? parseInt(page) : 1;
 const videosPerPage = 40;
-const rawQueryFromParams = query ? decodeURIComponent(query) : '';
-const rawQueryFromSearch = Astro.url.searchParams.get('query') ? decodeURIComponent(Astro.url.searchParams.get('query')!) : '';
-
-const originalQuery = rawQueryFromParams || rawQueryFromSearch;
+const originalQuery = query ? decodeURIComponent(query) : '';
 
 const searchInput = originalQuery.toLowerCase().trim();
 
