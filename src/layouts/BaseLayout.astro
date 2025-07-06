@@ -60,15 +60,16 @@ const organizationSchema = {
   "sameAs": []
 };
 
-const combinedJsonLdSchemas = [
-  ...jsonLdSchemas,
-  ...schemaJsonLd
-];
-
-const jsonLdSchemas = [
+const baseLayoutSchemas = [
   websiteSchema,
   organizationSchema
 ];
+
+const combinedJsonLdSchemas = [
+  ...baseLayoutSchemas,
+  ...schemaJsonLd
+];
+
 ---
 <!doctype html>
 <html lang="id">
