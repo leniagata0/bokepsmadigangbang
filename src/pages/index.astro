@@ -124,6 +124,8 @@ const breadcrumbs = [
 const currentUrl = url;
 const siteName = nama;
 const siteDescription = desk;
+const allCategories = [...new Set(allVideos.map(video => video.category))].filter(Boolean);
+const homeKeywords = `${nama}, ${allCategories.join(', ')}, nonton bokep gratis, bokep streaming online`;
 
 const schemaWebPage = {
   "@context": "https://schema.org",
@@ -162,6 +164,7 @@ const schemaBreadcrumb = {
   siteName={siteName}
   preconnectDomains={preconnectDomains}
   siteUrl={currentUrl}
+  keywords={homeKeywords}
 >
   <script type="application/ld+json" set:html={JSON.stringify(schemaWebPage)} />
   <script type="application/ld+json" set:html={JSON.stringify(schemaBreadcrumb)} />
