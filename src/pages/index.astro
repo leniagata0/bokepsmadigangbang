@@ -9,7 +9,7 @@ export const prerender = true;
 
 const allVideos: VideoData[] = await getAllVideos();
 const videosByCategory: { [key: string]: VideoData[] } = {};
-const numberOfVideosPerCategory = 16;
+const numberOfVideosPerCategory = 12;
 
 const usedTitles = new Set<string>();
 
@@ -59,7 +59,7 @@ allCategoryNames.forEach(categoryName => {
 
 const sortedCategories = Object.keys(finalVideosByCategory).sort();
 
-const numberOfRandomVideos = 16;
+const numberOfRandomVideos = 12;
 
 const randomVideos: VideoData[] = [];
 const videosForRandomSelection = allVideos.filter(video => {
