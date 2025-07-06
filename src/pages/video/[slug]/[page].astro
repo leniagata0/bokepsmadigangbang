@@ -6,8 +6,6 @@ import { getAllVideos, type VideoData } from '../../../utils/data.ts';
 import { slugify } from '../../../utils/slugify.ts';
 
 export async function getStaticPaths() {
-  // Anda mungkin ingin generate paths di sini jika Anda tahu semua slug yang mungkin.
-  // Jika tidak, biarkan kosong agar Astro melakukan rendering dinamis.
   return []; 
 }
 
@@ -16,10 +14,8 @@ const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
 const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
 
-// --- PERBAIKAN: Gunakan 'slug' dari params ---
 const { slug, page } = Astro.params;
 const originalQuery = slug ? decodeURIComponent(slug) : '';
-// ---------------------------------------------
 
 const currentPage = page ? parseInt(page) : 1;
 const videosPerPage = 40;
@@ -154,6 +150,7 @@ if (searchWords.length > 0) {
     searchResults = [];
     paginatedResults = [];
     randomPostsBelowSearch = [];
+    preconnectDomains = [];
   }
 } else {
     const numberOfRandomPosts = 12;
@@ -165,7 +162,6 @@ if (searchWords.length > 0) {
     randomPostsBelowSearch.forEach(video => {
       try {
         if (video.thumbnail) domainsSet.add(new URL(video.thumbnail).origin);
-        if (video.embedUrl) domainsSet.add(new URL(video.embedUrl).origin);
       } catch (e) {
         console.error(`URL tidak valid di JSON untuk video ID ${video.id} (random posts - no query):`, e);
       }
@@ -189,19 +185,76 @@ function capitalizeWords(str: string): string {
 }
 
 const displayQuery = capitalizeWords(originalQuery);
+const currentUrl = new URL(Astro.url.pathname, url).href;
+
 
 const breadcrumbs = [
   { name: 'Home', url: `${url}` },
   { name: `Pencarian: ${displayQuery}`, url: null },
 ];
 
+const schemaBreadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": breadcrumbs.map((item, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "name": item.name,
+    ...(item.url && { "item": item.url })
+  }))
+};
+
+const schemaSearchResultsPage = {
+  "@context": "https://schema.org",
+  "@type": "SearchResultsPage",
+  "url": currentUrl,
+  "name": `Hasil Pencarian untuk ${displayQuery} | Halaman ${currentPage} - ${nama}`,
+  "description": `Menampilkan video yang relevan dengan '${displayQuery}'. Halaman ${currentPage} dari ${totalPages} hasil di ${nama}.`,
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": currentUrl
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": `${url}/video/{search_term_string}/1`
+    },
+    "query-input": "required name=search_term_string"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": nama,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${url}/logo.png`
+    }
+  },
+  "inLanguage": "id-ID"
+};
+
+const pageKeywords = `pencarian ${displayQuery}, video ${displayQuery}, nonton ${displayQuery}, ${nama}, hasil pencarian, halaman ${currentPage}`;
+
+const pageSchemas = [
+  schemaBreadcrumb,
+  schemaSearchResultsPage
+];
+
+const prevPageUrl = currentPage > 1 ? `${baseSearchUrl}/${currentPage - 1}` : null;
+const nextPageUrl = currentPage < totalPages ? `${baseSearchUrl}/${currentPage + 1}` : null;
 ---
 
 <Layout
   title={`${displayQuery} di ${nama} | Page ${currentPage}`}
   description={`${displayQuery} ${desk} di ${nama}. Page ${currentPage}.`}
   preconnectDomains={preconnectDomains}
+  schemaJsonLd={pageSchemas} // Mengirim schema ke Layout
+  siteUrl={url} // Pastikan ini juga ada jika digunakan di Layout
+  keywords={pageKeywords}
 >
+  {prevPageUrl && <link rel="prev" href={prevPageUrl} />}
+  {nextPageUrl && <link rel="next" href={nextPageUrl} />}
+
   <main class="search-page" itemscope itemtype="http://schema.org/SearchResultsPage">
     <nav class="breadcrumb" aria-label="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
       <ol>
