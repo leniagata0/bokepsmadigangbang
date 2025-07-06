@@ -1,4 +1,3 @@
----
 // src/pages/index.astro
 import Layout from '../layouts/BaseLayout.astro';
 import VideoCard from '../components/VideoCard.astro';
@@ -8,7 +7,6 @@ import { getAllVideos, type VideoData } from '../utils/data';
 export const prerender = true;
 
 const allVideos: VideoData[] = await getAllVideos();
-const preconnectDomains = Array.from(allDomains);
 const videosByCategory: { [key: string]: VideoData[] } = {};
 const numberOfVideosPerCategory = 16;
 
@@ -21,14 +19,26 @@ allVideos.forEach(video => {
   videosByCategory[video.category].push(video);
 });
 
+function shuffleArray<T>(array: T[]): T[] {
+  let currentIndex = array.length, randomIndex;
+
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+  return array;
+}
+
 const finalVideosByCategory: { [key: string]: VideoData[] } = {};
 const allCategoryNames = Object.keys(videosByCategory);
 
 allCategoryNames.forEach(categoryName => {
   const videosInThisCategory = videosByCategory[categoryName];
   
-  const shuffledVideosInThisCategory = videosInThisCategory
-    .sort(() => 0.5 - Math.random());
+  const shuffledVideosInThisCategory = shuffleArray([...videosInThisCategory]);
   
   const selectedVideosForCategory: VideoData[] = [];
   
@@ -56,8 +66,7 @@ const videosForRandomSelection = allVideos.filter(video => {
   return !usedTitles.has(normalizedTitle);
 });
 
-const shuffledRandomSelection = videosForRandomSelection
-  .sort(() => 0.5 - Math.random());
+const shuffledRandomSelection = shuffleArray([...videosForRandomSelection]);
 
 for (const video of shuffledRandomSelection) {
     const normalizedTitle = video.title.toLowerCase().trim();
@@ -98,6 +107,8 @@ randomVideos.forEach(video => {
   }
 });
 
+const preconnectDomains = Array.from(allDomains);
+
 const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
 const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
@@ -112,6 +123,36 @@ const breadcrumbs = [
 const currentUrl = url;
 const siteName = nama;
 const siteDescription = desk;
+
+const schemaWebPage = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "url": currentUrl,
+  "name": `${nama} - Video Bokep Indo Terbaru`,
+  "description": siteDescription,
+  "publisher": {
+    "@type": "Organization",
+    "name": siteName,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${currentUrl}/logo.png`
+    }
+  },
+  "datePublished": terbit,
+  "dateModified": new Date().toISOString(),
+  "inLanguage": "id-ID"
+};
+
+const schemaBreadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": breadcrumbs.map((item, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "name": item.name,
+    ...(item.url && { "item": item.url })
+  }))
+};
 ---
 
 <Layout
@@ -121,6 +162,11 @@ const siteDescription = desk;
   preconnectDomains={preconnectDomains}
   siteUrl={currentUrl}
 >
+  <script type="application/ld+json" set:html={JSON.stringify(schemaWebPage)} />
+  <script type="application/ld+json" set:html={JSON.stringify(schemaBreadcrumb)} />
+
+  <meta name="google-site-verification" content={google} />
+  <meta name="yandex-verification" content={yandex} />
 
   <main class="home-page" itemscope itemtype="http://schema.org/WebPage">
     <meta itemprop="url" content={currentUrl} />
@@ -134,8 +180,6 @@ const siteDescription = desk;
     </div>
     <meta itemprop="datePublished" content={terbit}/>
     <meta itemprop="dateModified" content={new Date().toISOString()} />
-    <meta name="google-site-verification" content={google} />
-    <meta name="yandex-verification" content={yandex} />
 
     <section class="hero-section">
       <h1 itemprop="headline">Nonton Video Streaming {nama} Terbaru dan Terlengkap</h1>
