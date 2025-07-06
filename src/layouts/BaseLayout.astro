@@ -1,5 +1,4 @@
 ---
-
 export interface Props {
   title: string;
   description: string;
@@ -7,6 +6,7 @@ export interface Props {
   siteName?: string;
   siteUrl?: string;
 }
+import '../scripts/main.js';
 const url = import.meta.env.PUBLIC_SITE_URL;
 const nama = import.meta.env.PUBLIC_SITE_NAME;
 const desk = import.meta.env.PUBLIC_SITE_DESCRIPTION;
@@ -115,6 +115,5 @@ const jsonLdSchemas = [
     <footer>
       <p>&copy; {new Date().getFullYear()} {siteName}. All rights reserved.</p>
     </footer>
-    <script src="/scripts/main.js"></script> 
   </body>
 </html>
